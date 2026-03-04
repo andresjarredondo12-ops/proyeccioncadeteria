@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Sistema de Suscripciones y Envíos</title>
+<title>Sistema Profesional de Suscripciones</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
 body { font-family: Arial; margin: 20px; }
@@ -17,37 +17,36 @@ button { padding: 6px 12px; cursor: pointer; }
 </head>
 <body>
 
-<h1>Sistema de Gestión de Suscripciones</h1>
+<h1>Sistema Profesional de Gestión</h1>
 
 <input type="file" id="excelFile" accept=".xlsx,.xls" />
 
 <h2>Filtrar por Suscripción</h2>
 <select id="filtro">
 <option value="">-- Seleccionar --</option>
-<option value="Daños">Daños</option>
-<option value="Privado">Privado</option>
-<option value="Procesal">Procesal</option>
-<option value="Penal">Penal</option>
-<option value="Procesal Penal">Procesal Penal</option>
-<option value="Laboral">Laboral</option>
-<option value="Actualidad">Actualidad</option>
-<option value="Penal Economico">Penal Economico</option>
+<option>Daños</option>
+<option>Privado</option>
+<option>Procesal</option>
+<option>Penal</option>
+<option>Procesal Penal</option>
+<option>Laboral</option>
+<option>Actualidad</option>
+<option>Penal Economico</option>
 </select>
 
 <button onclick="filtrar()">Filtrar</button>
-
 <div id="resultadoFiltro" class="result-box"></div>
 
 <h2>Configuración Peso por Revista (kg)</h2>
 <div class="config-box">
-Daños: <input type="number" step="0.1" id="peso_Daños" value="0.5">
-Privado: <input type="number" step="0.1" id="peso_Privado" value="0.5">
-Procesal: <input type="number" step="0.1" id="peso_Procesal" value="0.5">
-Penal: <input type="number" step="0.1" id="peso_Penal" value="0.5">
-Procesal Penal: <input type="number" step="0.1" id="peso_Procesal Penal" value="0.5">
-Laboral: <input type="number" step="0.1" id="peso_Laboral" value="0.5">
-Actualidad: <input type="number" step="0.1" id="peso_Actualidad" value="0.5">
-Penal Economico: <input type="number" step="0.1" id="peso_Penal Economico" value="0.5">
+Daños: <input type="number" step="0.1" id="peso_daños" value="0.5"><br>
+Privado: <input type="number" step="0.1" id="peso_privado" value="0.5"><br>
+Procesal: <input type="number" step="0.1" id="peso_procesal" value="0.5"><br>
+Penal: <input type="number" step="0.1" id="peso_penal" value="0.5"><br>
+Procesal Penal: <input type="number" step="0.1" id="peso_procesal penal" value="0.5"><br>
+Laboral: <input type="number" step="0.1" id="peso_laboral" value="0.5"><br>
+Actualidad: <input type="number" step="0.1" id="peso_actualidad" value="0.5"><br>
+Penal Economico: <input type="number" step="0.1" id="peso_penal economico" value="0.5"><br>
 </div>
 
 <h2>Configuración Costo de Envío</h2>
@@ -59,7 +58,6 @@ Hasta 10kg: <input type="number" id="costo10" value="20000"><br>
 </div>
 
 <button onclick="calcularEnvio()">Calcular Envío Total</button>
-
 <div id="resultadoEnvio" class="result-box"></div>
 
 <h2>Estadísticas por Número de Cuenta</h2>
@@ -67,7 +65,22 @@ Hasta 10kg: <input type="number" id="costo10" value="20000"><br>
 <div id="resultadoCombinaciones" class="result-box"></div>
 
 <script>
+
 let datos = [];
+
+// Función para normalizar texto
+function limpiarTexto(texto) {
+if (!texto) return "";
+return texto.toString().trim().toLowerCase();
+}
+
+// Detectar columnas automáticamente
+function detectarColumnas(objeto) {
+let columnas = Object.keys(objeto);
+let cuentaCol = columnas.find(c => limpiarTexto(c).includes("cuenta"));
+let suscripcionCol = columnas.find(c => limpiarTexto(c).includes("suscrip"));
+return { cuentaCol, suscripcionCol };
+}
 
 document.getElementById('excelFile').addEventListener('change', function(e) {
 const reader = new FileReader();
@@ -75,15 +88,33 @@ reader.onload = function(event) {
 const data = new Uint8Array(event.target.result);
 const workbook = XLSX.read(data, {type: 'array'});
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
-datos = XLSX.utils.sheet_to_json(sheet);
+let raw = XLSX.utils.sheet_to_json(sheet);
+
+if(raw.length === 0){
+alert("El archivo está vacío");
+return;
+}
+
+let {cuentaCol, suscripcionCol} = detectarColumnas(raw[0]);
+
+if(!cuentaCol || !suscripcionCol){
+alert("No se encontraron columnas de cuenta o suscripción");
+return;
+}
+
+datos = raw.map(r => ({
+cuenta: limpiarTexto(r[cuentaCol]),
+suscripcion: limpiarTexto(r[suscripcionCol])
+}));
+
 alert("Archivo cargado correctamente");
 };
 reader.readAsArrayBuffer(e.target.files[0]);
 });
 
 function filtrar() {
-const tipo = document.getElementById("filtro").value;
-const filtrados = datos.filter(d => d.Suscripcion && d.Suscripcion.includes(tipo));
+let tipo = limpiarTexto(document.getElementById("filtro").value);
+let filtrados = datos.filter(d => d.suscripcion.includes(tipo));
 document.getElementById("resultadoFiltro").innerHTML =
 "Total encontrados: " + filtrados.length;
 }
@@ -92,8 +123,8 @@ function calcularCombinaciones() {
 let cuentas = {};
 
 datos.forEach(d => {
-if(!cuentas[d.NumeroCuenta]) cuentas[d.NumeroCuenta] = [];
-cuentas[d.NumeroCuenta].push(d.Suscripcion);
+if(!cuentas[d.cuenta]) cuentas[d.cuenta] = [];
+cuentas[d.cuenta].push(d.suscripcion);
 });
 
 let privadoSolo = 0;
@@ -104,16 +135,16 @@ let privadoDaniosProcesal = 0;
 for(let cuenta in cuentas){
 let subs = cuentas[cuenta];
 
-if(subs.includes("Privado") && subs.length === 1)
+if(subs.includes("privado") && subs.length === 1)
 privadoSolo++;
 
-if(subs.includes("Privado") && subs.includes("Daños") && subs.length === 2)
+if(subs.includes("privado") && subs.includes("daños") && subs.length === 2)
 privadoDanios++;
 
-if(subs.includes("Privado") && subs.includes("Procesal") && subs.length === 2)
+if(subs.includes("privado") && subs.includes("procesal") && subs.length === 2)
 privadoProcesal++;
 
-if(subs.includes("Privado") && subs.includes("Daños") && subs.includes("Procesal") && subs.length === 3)
+if(subs.includes("privado") && subs.includes("daños") && subs.includes("procesal") && subs.length === 3)
 privadoDaniosProcesal++;
 }
 
@@ -130,8 +161,8 @@ let cuentas = {};
 let totalEnvio = 0;
 
 datos.forEach(d => {
-if(!cuentas[d.NumeroCuenta]) cuentas[d.NumeroCuenta] = [];
-cuentas[d.NumeroCuenta].push(d.Suscripcion);
+if(!cuentas[d.cuenta]) cuentas[d.cuenta] = [];
+cuentas[d.cuenta].push(d.suscripcion);
 });
 
 for(let cuenta in cuentas){
@@ -154,6 +185,7 @@ totalEnvio += costo;
 document.getElementById("resultadoEnvio").innerHTML =
 "Costo total de envío: $" + totalEnvio.toLocaleString();
 }
+
 </script>
 
 </body>

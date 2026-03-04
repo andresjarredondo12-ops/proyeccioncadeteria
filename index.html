@@ -21,7 +21,7 @@ button { padding: 6px 12px; cursor: pointer; margin-top: 10px; }
 
 <input type="file" id="excelFile" accept=".xlsx,.xls" />
 
-<h2>Seleccionar revistas (puede elegir varias)</h2>
+<h2>Seleccionar revistas</h2>
 
 <select id="filtroMultiple" multiple class="multi-select">
 <option>Daños</option>
@@ -53,23 +53,19 @@ Actualidad: <input type="number" step="0.1" data-revista="actualidad" value="0.5
 Penal Económico: <input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
 </div>
 
-<h2>Configuración Costo de Envío</h2>
+<button onclick="calcularTodo()">Generar Combinaciones y Calcular Envío</button>
 
-<div class="config-box">
-Hasta 1kg: <input type="number" id="costo1" value="5090"><br>
-Hasta 2kg: <input type="number" id="costo2" value="7000"><br>
-Hasta 5kg: <input type="number" id="costo5" value="12000"><br>
-Hasta 10kg: <input type="number" id="costo10" value="20000"><br>
-</div>
+<h2>Combinaciones Exactas</h2>
+<div id="resultadoCombinaciones" class="result-box"></div>
 
-<button onclick="calcularEnvio()">Calcular Envío Total</button>
+<h2>Resumen Envíos</h2>
 <div id="resultadoEnvio" class="result-box"></div>
 
 <script>
 
 let datos = [];
 
-// Normalizar texto (elimina tildes y espacios)
+// Normalizar texto
 function limpiarTexto(texto) {
 if (!texto) return "";
 return texto.toString()
@@ -124,17 +120,12 @@ reader.readAsArrayBuffer(e.target.files[0]);
 
 });
 
-// CONTAR INDIVIDUALMENTE CADA REVISTA SELECCIONADA
+// Contar revistas seleccionadas individualmente
 function contarIndividual(){
 
 let seleccionadas = Array.from(
 document.getElementById("filtroMultiple").selectedOptions
 ).map(o => limpiarTexto(o.value));
-
-if(seleccionadas.length === 0){
-alert("Seleccione al menos una revista");
-return;
-}
 
 let cuentas = {};
 
@@ -161,8 +152,8 @@ document.getElementById("resultadoConteo").innerHTML = resultadoHTML;
 
 }
 
-// CALCULO DE ENVIO FINAL
-function calcularEnvio(){
+// Generar combinaciones exactas y calcular envío
+function calcularTodo(){
 
 let cuentas = {};
 let totalEnvio = 0;
@@ -173,6 +164,29 @@ if(!cuentas[d.cuenta]) cuentas[d.cuenta] = new Set();
 cuentas[d.cuenta].add(d.suscripcion);
 });
 
+// GENERAR COMBINACIONES EXACTAS
+let combinaciones = {};
+
+for(let cuenta in cuentas){
+
+let lista = Array.from(cuentas[cuenta]).sort();
+let clave = lista.join(" + ");
+
+if(!combinaciones[clave]) combinaciones[clave] = 0;
+combinaciones[clave]++;
+
+}
+
+// Mostrar combinaciones
+let htmlComb = "";
+for(let comb in combinaciones){
+htmlComb += comb.toUpperCase() + ": <b>" + combinaciones[comb] + "</b><br>";
+}
+
+document.getElementById("resultadoCombinaciones").innerHTML = htmlComb;
+
+
+// CALCULO ENVIO
 for(let cuenta in cuentas){
 
 let pesoCuenta = 0;

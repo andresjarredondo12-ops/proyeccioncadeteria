@@ -4,26 +4,29 @@
 <meta charset="UTF-8">
 <title>Sistema Profesional de Suscripciones</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
 <style>
 body { font-family: Arial; margin: 20px; }
 h2 { margin-top: 30px; }
-table { border-collapse: collapse; margin-top: 10px; }
-th, td { border: 1px solid #ccc; padding: 6px; }
-input, select { margin: 5px; padding: 5px; }
-button { padding: 6px 12px; cursor: pointer; }
+select, input { margin: 5px; padding: 5px; }
+button { padding: 6px 12px; cursor: pointer; margin-top: 10px; }
 .config-box { background: #f5f5f5; padding: 10px; margin-bottom: 15px; }
 .result-box { background: #e9f5ff; padding: 10px; margin-top: 15px; }
+.multi-select {
+width: 300px;
+height: 160px;
+}
 </style>
 </head>
 <body>
 
-<h1>Sistema Profesional de Gestión</h1>
+<h1>Sistema Profesional de Gestión de Suscripciones</h1>
 
 <input type="file" id="excelFile" accept=".xlsx,.xls" />
 
-<h2>Filtrar por Suscripción</h2>
-<select id="filtro">
-<option value="">-- Seleccionar --</option>
+<h2>Filtrar por una o varias revistas</h2>
+
+<select id="filtroMultiple" multiple class="multi-select">
 <option>Daños</option>
 <option>Privado</option>
 <option>Procesal</option>
@@ -31,25 +34,32 @@ button { padding: 6px 12px; cursor: pointer; }
 <option>Procesal Penal</option>
 <option>Laboral</option>
 <option>Actualidad</option>
-<option>Penal Economico</option>
+<option>Penal Económico</option>
 </select>
 
-<button onclick="filtrar()">Filtrar</button>
+<br>
+<small>Mantener presionada la tecla CTRL para seleccionar varias</small>
+<br>
+
+<button onclick="filtrarCombinacion()">Filtrar Combinación</button>
+
 <div id="resultadoFiltro" class="result-box"></div>
 
 <h2>Configuración Peso por Revista (kg)</h2>
+
 <div class="config-box">
-Daños: <input type="number" step="0.1" id="peso_daños" value="0.5"><br>
-Privado: <input type="number" step="0.1" id="peso_privado" value="0.5"><br>
-Procesal: <input type="number" step="0.1" id="peso_procesal" value="0.5"><br>
-Penal: <input type="number" step="0.1" id="peso_penal" value="0.5"><br>
-Procesal Penal: <input type="number" step="0.1" id="peso_procesal penal" value="0.5"><br>
-Laboral: <input type="number" step="0.1" id="peso_laboral" value="0.5"><br>
-Actualidad: <input type="number" step="0.1" id="peso_actualidad" value="0.5"><br>
-Penal Economico: <input type="number" step="0.1" id="peso_penal economico" value="0.5"><br>
+Daños: <input type="number" step="0.1" data-revista="daños" value="0.5"><br>
+Privado: <input type="number" step="0.1" data-revista="privado" value="0.5"><br>
+Procesal: <input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
+Penal: <input type="number" step="0.1" data-revista="penal" value="0.5"><br>
+Procesal Penal: <input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
+Laboral: <input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
+Actualidad: <input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
+Penal Económico: <input type="number" step="0.1" data-revista="penal económico" value="0.5"><br>
 </div>
 
 <h2>Configuración Costo de Envío</h2>
+
 <div class="config-box">
 Hasta 1kg: <input type="number" id="costo1" value="5090"><br>
 Hasta 2kg: <input type="number" id="costo2" value="7000"><br>
@@ -60,18 +70,18 @@ Hasta 10kg: <input type="number" id="costo10" value="20000"><br>
 <button onclick="calcularEnvio()">Calcular Envío Total</button>
 <div id="resultadoEnvio" class="result-box"></div>
 
-<h2>Estadísticas por Número de Cuenta</h2>
-<button onclick="calcularCombinaciones()">Calcular Combinaciones</button>
-<div id="resultadoCombinaciones" class="result-box"></div>
-
 <script>
 
 let datos = [];
 
-// Función para normalizar texto
+// Limpieza robusta
 function limpiarTexto(texto) {
 if (!texto) return "";
-return texto.toString().trim().toLowerCase();
+return texto.toString()
+.trim()
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "");
 }
 
 // Detectar columnas automáticamente
@@ -82,23 +92,27 @@ let suscripcionCol = columnas.find(c => limpiarTexto(c).includes("suscrip"));
 return { cuentaCol, suscripcionCol };
 }
 
+// Cargar Excel
 document.getElementById('excelFile').addEventListener('change', function(e) {
+
 const reader = new FileReader();
+
 reader.onload = function(event) {
+
 const data = new Uint8Array(event.target.result);
 const workbook = XLSX.read(data, {type: 'array'});
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
 let raw = XLSX.utils.sheet_to_json(sheet);
 
 if(raw.length === 0){
-alert("El archivo está vacío");
+alert("Archivo vacío");
 return;
 }
 
 let {cuentaCol, suscripcionCol} = detectarColumnas(raw[0]);
 
 if(!cuentaCol || !suscripcionCol){
-alert("No se encontraron columnas de cuenta o suscripción");
+alert("No se detectaron columnas correctas");
 return;
 }
 
@@ -108,85 +122,90 @@ suscripcion: limpiarTexto(r[suscripcionCol])
 }));
 
 alert("Archivo cargado correctamente");
+
 };
+
 reader.readAsArrayBuffer(e.target.files[0]);
+
 });
 
-function filtrar() {
-let tipo = limpiarTexto(document.getElementById("filtro").value);
-let filtrados = datos.filter(d => d.suscripcion.includes(tipo));
-document.getElementById("resultadoFiltro").innerHTML =
-"Total encontrados: " + filtrados.length;
+// FILTRO MULTIPLE POR COMBINACIÓN EXACTA
+function filtrarCombinacion(){
+
+let seleccionadas = Array.from(
+document.getElementById("filtroMultiple").selectedOptions
+).map(o => limpiarTexto(o.value));
+
+if(seleccionadas.length === 0){
+alert("Seleccione al menos una revista");
+return;
 }
 
-function calcularCombinaciones() {
 let cuentas = {};
 
 datos.forEach(d => {
-if(!cuentas[d.cuenta]) cuentas[d.cuenta] = [];
-cuentas[d.cuenta].push(d.suscripcion);
+if(!cuentas[d.cuenta]) cuentas[d.cuenta] = new Set();
+cuentas[d.cuenta].add(d.suscripcion);
 });
 
-let privadoSolo = 0;
-let privadoDanios = 0;
-let privadoProcesal = 0;
-let privadoDaniosProcesal = 0;
+let contador = 0;
 
 for(let cuenta in cuentas){
-let subs = cuentas[cuenta];
 
-if(subs.includes("privado") && subs.length === 1)
-privadoSolo++;
+let subs = Array.from(cuentas[cuenta]);
 
-if(subs.includes("privado") && subs.includes("daños") && subs.length === 2)
-privadoDanios++;
+let coincide =
+seleccionadas.every(s => subs.includes(s)) &&
+subs.length === seleccionadas.length;
 
-if(subs.includes("privado") && subs.includes("procesal") && subs.length === 2)
-privadoProcesal++;
-
-if(subs.includes("privado") && subs.includes("daños") && subs.includes("procesal") && subs.length === 3)
-privadoDaniosProcesal++;
+if(coincide) contador++;
 }
 
-document.getElementById("resultadoCombinaciones").innerHTML = `
-Privado solo: ${privadoSolo}<br>
-Privado + Daños: ${privadoDanios}<br>
-Privado + Procesal: ${privadoProcesal}<br>
-Privado + Daños + Procesal: ${privadoDaniosProcesal}
-`;
+document.getElementById("resultadoFiltro").innerHTML =
+"Cantidad de cuentas con EXACTAMENTE esa combinación: <b>" + contador + "</b>";
 }
 
+
+// CALCULO DE ENVIO
 function calcularEnvio(){
+
 let cuentas = {};
 let totalEnvio = 0;
 
 datos.forEach(d => {
-if(!cuentas[d.cuenta]) cuentas[d.cuenta] = [];
-cuentas[d.cuenta].push(d.suscripcion);
+if(!cuentas[d.cuenta]) cuentas[d.cuenta] = new Set();
+cuentas[d.cuenta].add(d.suscripcion);
 });
 
 for(let cuenta in cuentas){
+
 let pesoTotal = 0;
 
 cuentas[cuenta].forEach(sub => {
-let input = document.getElementById("peso_" + sub);
+
+let input = document.querySelector(`[data-revista="${sub}"]`);
 if(input) pesoTotal += parseFloat(input.value);
+
 });
 
 let costo = 0;
+
 if(pesoTotal <= 1) costo = parseFloat(document.getElementById("costo1").value);
 else if(pesoTotal <= 2) costo = parseFloat(document.getElementById("costo2").value);
 else if(pesoTotal <= 5) costo = parseFloat(document.getElementById("costo5").value);
 else costo = parseFloat(document.getElementById("costo10").value);
 
 totalEnvio += costo;
+
 }
 
 document.getElementById("resultadoEnvio").innerHTML =
-"Costo total de envío: $" + totalEnvio.toLocaleString();
+"Costo total de envío: <b>$" + totalEnvio.toLocaleString() + "</b>";
+
 }
 
 </script>
 
 </body>
 </html>
+

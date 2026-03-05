@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Sistema Profesional de Suscripciones</title>
+<title>Sistema de Combinaciones por Cuenta</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
@@ -10,19 +10,18 @@ body { font-family: Arial; margin: 20px; }
 h2 { margin-top: 30px; }
 input { margin: 5px; padding: 5px; }
 button { padding: 6px 12px; cursor: pointer; margin-top: 10px; }
-.config-box { background: #f5f5f5; padding: 10px; margin-bottom: 15px; }
-.result-box { background: #e9f5ff; padding: 10px; margin-top: 15px; }
+.box { background: #f5f5f5; padding: 10px; margin-top: 15px; }
+.result { background: #e9f5ff; padding: 10px; margin-top: 15px; }
 </style>
 </head>
 <body>
 
-<h1>Sistema Profesional de Gestión</h1>
+<h1>Sistema de Suscripciones</h1>
 
 <input type="file" id="excelFile" accept=".xlsx,.xls" />
 
-<h2>Configuración Peso por Revista (kg)</h2>
-
-<div class="config-box">
+<h2>Peso por Revista (kg)</h2>
+<div class="box">
 Daños: <input type="number" step="0.1" data-revista="danos" value="0.5"><br>
 Privado: <input type="number" step="0.1" data-revista="privado" value="0.5"><br>
 Procesal: <input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
@@ -33,30 +32,29 @@ Actualidad: <input type="number" step="0.1" data-revista="actualidad" value="0.5
 Penal Económico: <input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
 </div>
 
-<h2>Configuración Costo de Envío</h2>
-
-<div class="config-box">
+<h2>Costos de Envío</h2>
+<div class="box">
 Hasta 1kg: <input type="number" id="costo1" value="5090"><br>
 Hasta 2kg: <input type="number" id="costo2" value="7000"><br>
 Hasta 5kg: <input type="number" id="costo5" value="12000"><br>
 Hasta 10kg: <input type="number" id="costo10" value="20000"><br>
 </div>
 
-<button onclick="procesarTodo()">Generar Combinaciones y Calcular Envío</button>
+<button onclick="procesar()">Procesar Archivo</button>
 
 <h2>Combinaciones Exactas por Cuenta</h2>
-<div id="resultadoCombinaciones" class="result-box"></div>
+<div id="resultadoCombinaciones" class="result"></div>
 
 <h2>Resumen Envíos</h2>
-<div id="resultadoEnvio" class="result-box"></div>
+<div id="resultadoEnvio" class="result"></div>
 
 <script>
 
 let datos = [];
 
-// Normalizar texto
-function limpiarTexto(texto) {
-if (!texto) return "";
+// Normaliza texto
+function normalizar(texto){
+if(!texto) return "";
 return texto.toString()
 .trim()
 .toLowerCase()
@@ -64,41 +62,41 @@ return texto.toString()
 .replace(/[\u0300-\u036f]/g, "");
 }
 
-// Detectar columnas
-function detectarColumnas(objeto) {
-let columnas = Object.keys(objeto);
-let cuentaCol = columnas.find(c => limpiarTexto(c).includes("cuenta"));
-let suscripcionCol = columnas.find(c => limpiarTexto(c).includes("suscrip"));
-return { cuentaCol, suscripcionCol };
+// Detectar columnas automáticamente
+function detectarColumnas(obj){
+let columnas = Object.keys(obj);
+let cuentaCol = columnas.find(c => normalizar(c).includes("cuenta"));
+let suscripcionCol = columnas.find(c => normalizar(c).includes("suscrip"));
+return {cuentaCol, suscripcionCol};
 }
 
 // Cargar Excel
-document.getElementById('excelFile').addEventListener('change', function(e) {
+document.getElementById("excelFile").addEventListener("change", function(e){
 
 const reader = new FileReader();
 
-reader.onload = function(event) {
+reader.onload = function(event){
 
 const data = new Uint8Array(event.target.result);
-const workbook = XLSX.read(data, {type: 'array'});
+const workbook = XLSX.read(data, {type:'array'});
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
-let raw = XLSX.utils.sheet_to_json(sheet);
+const json = XLSX.utils.sheet_to_json(sheet);
 
-if(raw.length === 0){
+if(json.length === 0){
 alert("Archivo vacío");
 return;
 }
 
-let {cuentaCol, suscripcionCol} = detectarColumnas(raw[0]);
+const {cuentaCol, suscripcionCol} = detectarColumnas(json[0]);
 
 if(!cuentaCol || !suscripcionCol){
-alert("No se detectaron columnas correctas");
+alert("No se detectaron columnas correctas (Cuenta / Suscripción)");
 return;
 }
 
-datos = raw.map(r => ({
-cuenta: limpiarTexto(r[cuentaCol]),
-suscripcion: limpiarTexto(r[suscripcionCol])
+datos = json.map(row => ({
+cuenta: normalizar(row[cuentaCol]),
+suscripcion: normalizar(row[suscripcionCol])
 }));
 
 alert("Archivo cargado correctamente");
@@ -109,32 +107,47 @@ reader.readAsArrayBuffer(e.target.files[0]);
 
 });
 
-function procesarTodo(){
+// PROCESAR COMBINACIONES CORRECTAMENTE
+function procesar(){
 
-let cuentas = {};
-let totalEnvio = 0;
-let pesoTotalGeneral = 0;
+let mapaCuentas = {};
 
-// AGRUPAR POR CUENTA
+// Agrupar TODAS las suscripciones por cuenta
 datos.forEach(d => {
-if(!cuentas[d.cuenta]) cuentas[d.cuenta] = new Set();
-cuentas[d.cuenta].add(d.suscripcion);
+
+if(!mapaCuentas[d.cuenta]){
+mapaCuentas[d.cuenta] = [];
+}
+
+mapaCuentas[d.cuenta].push(d.suscripcion);
+
 });
 
-// GENERAR COMBINACIONES CORRECTAS
+// Generar combinación exacta por cuenta
 let combinaciones = {};
 
-for(let cuenta in cuentas){
+for(let cuenta in mapaCuentas){
 
-let lista = Array.from(cuentas[cuenta]).sort();
-let clave = lista.join(" + ");
+// eliminar duplicados
+let revistas = [...new Set(mapaCuentas[cuenta])];
 
-if(!combinaciones[clave]) combinaciones[clave] = 0;
+// ordenar alfabéticamente
+revistas.sort();
+
+// generar clave única
+let clave = revistas.join(" + ");
+
+if(!combinaciones[clave]){
+combinaciones[clave] = 0;
+}
+
 combinaciones[clave]++;
 
 }
 
-let htmlComb = "";
+// Mostrar combinaciones reales
+let html = "";
+
 for(let comb in combinaciones){
 
 let nombre = comb;
@@ -143,23 +156,32 @@ if(comb.split(" + ").length === 1){
 nombre = comb + " solo";
 }
 
-htmlComb += nombre.toUpperCase() + ": <b>" + combinaciones[comb] + "</b><br>";
+html += nombre.toUpperCase() + ": <b>" + combinaciones[comb] + "</b><br>";
+
 }
 
-document.getElementById("resultadoCombinaciones").innerHTML = htmlComb;
+document.getElementById("resultadoCombinaciones").innerHTML = html;
 
 
-// CALCULO DE ENVIO POR CUENTA
-for(let cuenta in cuentas){
+// CALCULAR ENVÍOS POR CUENTA
+let totalEnvio = 0;
+let pesoTotal = 0;
 
+for(let cuenta in mapaCuentas){
+
+let revistas = [...new Set(mapaCuentas[cuenta])];
 let pesoCuenta = 0;
 
-cuentas[cuenta].forEach(sub => {
-let input = document.querySelector(`[data-revista="${sub}"]`);
-if(input) pesoCuenta += parseFloat(input.value);
+revistas.forEach(r => {
+
+let input = document.querySelector(`[data-revista="${r}"]`);
+if(input){
+pesoCuenta += parseFloat(input.value);
+}
+
 });
 
-pesoTotalGeneral += pesoCuenta;
+pesoTotal += pesoCuenta;
 
 let costo = 0;
 
@@ -173,7 +195,7 @@ totalEnvio += costo;
 }
 
 document.getElementById("resultadoEnvio").innerHTML =
-"Peso total general: <b>" + pesoTotalGeneral.toFixed(2) + " kg</b><br>" +
+"Peso total general: <b>" + pesoTotal.toFixed(2) + " kg</b><br>" +
 "Costo total de envío: <b>$" + totalEnvio.toLocaleString() + "</b>";
 
 }
@@ -182,4 +204,3 @@ document.getElementById("resultadoEnvio").innerHTML =
 
 </body>
 </html>
-

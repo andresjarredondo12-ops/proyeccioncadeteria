@@ -3,46 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <title>Sistema de Combinaciones por Cuenta</title>
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body { font-family: Arial; margin: 20px; }
-h2 { margin-top: 30px; }
-input { margin: 5px; padding: 5px; }
-button { padding: 6px 12px; cursor: pointer; margin-top: 10px; }
-.box { background: #f5f5f5; padding: 10px; margin-top: 15px; }
-.result { background: #e9f5ff; padding: 10px; margin-top: 15px; }
+
+body{
+font-family: Arial;
+margin:20px;
+}
+
+h2{
+margin-top:30px;
+}
+
+input,select{
+margin:5px;
+padding:6px;
+}
+
+button{
+padding:8px 14px;
+cursor:pointer;
+}
+
+.box{
+background:#f5f5f5;
+padding:12px;
+margin-top:10px;
+}
+
+.result{
+background:#e9f5ff;
+padding:12px;
+margin-top:10px;
+}
+
 </style>
+
 </head>
+
 <body>
 
 <h1>Sistema de Suscripciones</h1>
 
-<input type="file" id="excelFile" accept=".xlsx,.xls" />
+<input type="file" id="excelFile" accept=".xlsx,.xls">
+
+<h2>Filtro Revistas</h2>
+
+<div class="box">
+
+<select id="revistasFiltro" multiple size="8">
+
+<option value="danos">Daños</option>
+<option value="privado">Privado</option>
+<option value="procesal">Procesal</option>
+<option value="penal">Penal</option>
+<option value="procesal penal">Procesal Penal</option>
+<option value="laboral">Laboral</option>
+<option value="actualidad">Actualidad</option>
+<option value="penal economico">Penal Económico</option>
+
+</select>
+
+</div>
+
+<h2>Filtro Código Postal</h2>
+
+<div class="box">
+
+CP Exacto:
+<input type="number" id="cpExacto">
+
+<br>
+
+Desde:
+<input type="number" id="cpDesde">
+
+Hasta:
+<input type="number" id="cpHasta">
+
+</div>
 
 <h2>Peso por Revista (kg)</h2>
+
 <div class="box">
-Daños: <input type="number" step="0.1" data-revista="danos" value="0.5"><br>
-Privado: <input type="number" step="0.1" data-revista="privado" value="0.5"><br>
-Procesal: <input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
-Penal: <input type="number" step="0.1" data-revista="penal" value="0.5"><br>
-Procesal Penal: <input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
-Laboral: <input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
-Actualidad: <input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
-Penal Económico: <input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
+
+Daños
+<input type="number" step="0.1" data-revista="danos" value="0.5"><br>
+
+Privado
+<input type="number" step="0.1" data-revista="privado" value="0.5"><br>
+
+Procesal
+<input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
+
+Penal
+<input type="number" step="0.1" data-revista="penal" value="0.5"><br>
+
+Procesal Penal
+<input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
+
+Laboral
+<input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
+
+Actualidad
+<input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
+
+Penal Económico
+<input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
+
 </div>
 
 <h2>Costos de Envío</h2>
+
 <div class="box">
-Hasta 1kg: <input type="number" id="costo1" value="5090"><br>
-Hasta 2kg: <input type="number" id="costo2" value="7000"><br>
-Hasta 5kg: <input type="number" id="costo5" value="12000"><br>
-Hasta 10kg: <input type="number" id="costo10" value="20000"><br>
+
+Hasta 1kg
+<input type="number" id="costo1" value="5090"><br>
+
+Hasta 2kg
+<input type="number" id="costo2" value="7000"><br>
+
+Hasta 5kg
+<input type="number" id="costo5" value="12000"><br>
+
+Hasta 10kg
+<input type="number" id="costo10" value="20000"><br>
+
 </div>
 
-<button onclick="procesar()">Procesar Archivo</button>
+<button onclick="procesar()">Procesar</button>
 
-<h2>Combinaciones Exactas por Cuenta</h2>
+<h2>Combinaciones Exactas</h2>
 <div id="resultadoCombinaciones" class="result"></div>
 
 <h2>Resumen Envíos</h2>
@@ -50,153 +143,238 @@ Hasta 10kg: <input type="number" id="costo10" value="20000"><br>
 
 <script>
 
-let datos = [];
+let datos = []
 
-// Normaliza texto
 function normalizar(texto){
-if(!texto) return "";
+
+if(!texto) return ""
+
 return texto.toString()
 .trim()
 .toLowerCase()
 .normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
+.replace(/[\u0300-\u036f]/g,"")
+
 }
 
-// Detectar columnas automáticamente
 function detectarColumnas(obj){
-let columnas = Object.keys(obj);
-let cuentaCol = columnas.find(c => normalizar(c).includes("cuenta"));
-let suscripcionCol = columnas.find(c => normalizar(c).includes("suscrip"));
-return {cuentaCol, suscripcionCol};
+
+let columnas = Object.keys(obj)
+
+let cuentaCol = columnas.find(c => normalizar(c).includes("cuenta"))
+let suscripcionCol = columnas.find(c => normalizar(c).includes("suscrip"))
+let cpCol = columnas.find(c =>
+normalizar(c).includes("postal") ||
+normalizar(c) === "cp"
+)
+
+return {cuentaCol,suscripcionCol,cpCol}
+
 }
 
-// Cargar Excel
-document.getElementById("excelFile").addEventListener("change", function(e){
+document.getElementById("excelFile").addEventListener("change",function(e){
 
-const reader = new FileReader();
+const reader = new FileReader()
 
 reader.onload = function(event){
 
-const data = new Uint8Array(event.target.result);
-const workbook = XLSX.read(data, {type:'array'});
-const sheet = workbook.Sheets[workbook.SheetNames[0]];
-const json = XLSX.utils.sheet_to_json(sheet);
+const data = new Uint8Array(event.target.result)
+
+const workbook = XLSX.read(data,{type:'array'})
+
+const sheet = workbook.Sheets[workbook.SheetNames[0]]
+
+const json = XLSX.utils.sheet_to_json(sheet)
 
 if(json.length === 0){
-alert("Archivo vacío");
-return;
+
+alert("Archivo vacío")
+return
+
 }
 
-const {cuentaCol, suscripcionCol} = detectarColumnas(json[0]);
+const {cuentaCol,suscripcionCol,cpCol} = detectarColumnas(json[0])
 
 if(!cuentaCol || !suscripcionCol){
-alert("No se detectaron columnas correctas (Cuenta / Suscripción)");
-return;
+
+alert("No se detectaron columnas de Cuenta o Suscripción")
+return
+
 }
 
 datos = json.map(row => ({
+
 cuenta: normalizar(row[cuentaCol]),
-suscripcion: normalizar(row[suscripcionCol])
-}));
+suscripcion: normalizar(row[suscripcionCol]),
+cp: cpCol ? parseInt(row[cpCol]) : null
 
-alert("Archivo cargado correctamente");
+}))
 
-};
+alert("Archivo cargado correctamente")
 
-reader.readAsArrayBuffer(e.target.files[0]);
-
-});
-
-// PROCESAR COMBINACIONES CORRECTAMENTE
-function procesar(){
-
-let mapaCuentas = {};
-
-// Agrupar TODAS las suscripciones por cuenta
-datos.forEach(d => {
-
-if(!mapaCuentas[d.cuenta]){
-mapaCuentas[d.cuenta] = [];
 }
 
-mapaCuentas[d.cuenta].push(d.suscripcion);
+reader.readAsArrayBuffer(e.target.files[0])
 
-});
+})
 
-// Generar combinación exacta por cuenta
-let combinaciones = {};
+function obtenerRevistasFiltro(){
+
+let select = document.getElementById("revistasFiltro")
+
+let seleccionadas = []
+
+for(let o of select.selectedOptions){
+
+seleccionadas.push(o.value)
+
+}
+
+return seleccionadas
+
+}
+
+function filtrarDatos(){
+
+let revistasFiltro = obtenerRevistasFiltro()
+
+let cpExacto = document.getElementById("cpExacto").value
+let cpDesde = document.getElementById("cpDesde").value
+let cpHasta = document.getElementById("cpHasta").value
+
+return datos.filter(d=>{
+
+if(revistasFiltro.length){
+
+if(!revistasFiltro.includes(d.suscripcion)) return false
+
+}
+
+if(cpExacto){
+
+if(d.cp != cpExacto) return false
+
+}
+
+if(cpDesde){
+
+if(d.cp < cpDesde) return false
+
+}
+
+if(cpHasta){
+
+if(d.cp > cpHasta) return false
+
+}
+
+return true
+
+})
+
+}
+
+function procesar(){
+
+let filtrados = filtrarDatos()
+
+let mapaCuentas = {}
+
+filtrados.forEach(d=>{
+
+if(!mapaCuentas[d.cuenta]){
+
+mapaCuentas[d.cuenta] = []
+
+}
+
+mapaCuentas[d.cuenta].push(d.suscripcion)
+
+})
+
+let combinaciones = {}
 
 for(let cuenta in mapaCuentas){
 
-// eliminar duplicados
-let revistas = [...new Set(mapaCuentas[cuenta])];
+let revistas = [...new Set(mapaCuentas[cuenta])]
 
-// ordenar alfabéticamente
-revistas.sort();
+revistas.sort()
 
-// generar clave única
-let clave = revistas.join(" + ");
+let clave = revistas.join(" + ")
 
 if(!combinaciones[clave]){
-combinaciones[clave] = 0;
-}
 
-combinaciones[clave]++;
+combinaciones[clave] = 0
 
 }
 
-// Mostrar combinaciones reales
-let html = "";
+combinaciones[clave]++
+
+}
+
+let html = ""
 
 for(let comb in combinaciones){
 
-let nombre = comb;
+let nombre = comb
 
 if(comb.split(" + ").length === 1){
-nombre = comb + " solo";
-}
 
-html += nombre.toUpperCase() + ": <b>" + combinaciones[comb] + "</b><br>";
+nombre = comb + " solo"
 
 }
 
-document.getElementById("resultadoCombinaciones").innerHTML = html;
+html += nombre.toUpperCase()+" : <b>"+combinaciones[comb]+"</b><br>"
 
+}
 
-// CALCULAR ENVÍOS POR CUENTA
-let totalEnvio = 0;
-let pesoTotal = 0;
+document.getElementById("resultadoCombinaciones").innerHTML = html
+
+let totalEnvio = 0
+let pesoTotal = 0
 
 for(let cuenta in mapaCuentas){
 
-let revistas = [...new Set(mapaCuentas[cuenta])];
-let pesoCuenta = 0;
+let revistas = [...new Set(mapaCuentas[cuenta])]
 
-revistas.forEach(r => {
+let pesoCuenta = 0
 
-let input = document.querySelector(`[data-revista="${r}"]`);
+revistas.forEach(r=>{
+
+let input = document.querySelector(`[data-revista="${r}"]`)
+
 if(input){
-pesoCuenta += parseFloat(input.value);
-}
 
-});
-
-pesoTotal += pesoCuenta;
-
-let costo = 0;
-
-if(pesoCuenta <= 1) costo = parseFloat(document.getElementById("costo1").value);
-else if(pesoCuenta <= 2) costo = parseFloat(document.getElementById("costo2").value);
-else if(pesoCuenta <= 5) costo = parseFloat(document.getElementById("costo5").value);
-else costo = parseFloat(document.getElementById("costo10").value);
-
-totalEnvio += costo;
+pesoCuenta += parseFloat(input.value)
 
 }
 
-document.getElementById("resultadoEnvio").innerHTML =
-"Peso total general: <b>" + pesoTotal.toFixed(2) + " kg</b><br>" +
-"Costo total de envío: <b>$" + totalEnvio.toLocaleString() + "</b>";
+})
+
+pesoTotal += pesoCuenta
+
+let costo = 0
+
+if(pesoCuenta<=1)
+costo = parseFloat(document.getElementById("costo1").value)
+
+else if(pesoCuenta<=2)
+costo = parseFloat(document.getElementById("costo2").value)
+
+else if(pesoCuenta<=5)
+costo = parseFloat(document.getElementById("costo5").value)
+
+else
+costo = parseFloat(document.getElementById("costo10").value)
+
+totalEnvio += costo
+
+}
+
+document.getElementById("resultadoEnvio").innerHTML=
+
+"Peso total: <b>"+pesoTotal.toFixed(2)+" kg</b><br>"+
+"Costo total envío: <b>$"+totalEnvio.toLocaleString()+"</b>"
 
 }
 

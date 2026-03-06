@@ -2,371 +2,195 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Sistema de Suscripciones</title>
-
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<title>Filtro Código Postal</title>
 
 <style>
 
 body{
 font-family: Arial;
-margin:20px;
+margin:40px;
 }
 
 h2{
-margin-top:30px;
+margin-bottom:10px;
 }
 
-input,select{
+input{
+padding:5px;
 margin:5px;
-padding:6px;
+width:120px;
 }
 
-button{
-padding:8px 14px;
-cursor:pointer;
-}
-
-.box{
-background:#f5f5f5;
-padding:12px;
-margin-top:10px;
-}
-
-.result{
-background:#e9f5ff;
-padding:12px;
-margin-top:12px;
+.costo{
+width:90px;
 }
 
 .rango{
-border:1px solid #ccc;
-padding:10px;
-margin-bottom:15px;
+margin-bottom:10px;
+}
+
+.resultado{
+margin-top:30px;
+border-top:1px solid #ccc;
+padding-top:20px;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<h1>Sistema de Suscripciones</h1>
+<h2>Filtro Código Postal</h2>
 
-<input type="file" id="excelFile" accept=".xlsx,.xls">
-
-<h2>Filtro Revistas</h2>
-
-<div class="box">
-
-<select id="revistasFiltro" multiple size="8">
-
-<option value="danos">Daños</option>
-<option value="privado">Privado</option>
-<option value="procesal">Procesal</option>
-<option value="penal">Penal</option>
-<option value="procesal penal">Procesal Penal</option>
-<option value="laboral">Laboral</option>
-<option value="actualidad">Lab.Act.</option>
-<option value="penal economico">Penal Económico</option>
-
-</select>
-
-</div>
-
-<h2>Rangos de Código Postal</h2>
-
-<div class="box">
+<div>
 
 <div class="rango">
+Rango 1  
+Desde <input id="d1"> 
+Hasta <input id="h1">
 
-<b>Rango 1</b><br>
+Costo envío $
+<input id="c1" class="costo">
 
-Desde <input type="number" id="r1d">
-Hasta <input type="number" id="r1h"><br><br>
-
-<b>Costos envío Rango 1</b><br>
-
-Hasta 1kg <input type="number" id="r1c1" value="5090">
-Hasta 2kg <input type="number" id="r1c2" value="7000">
-Hasta 5kg <input type="number" id="r1c5" value="12000">
-Hasta 10kg <input type="number" id="r1c10" value="20000">
-
+<label>
+<input type="checkbox" id="iva1"> +21% IVA
+</label>
 </div>
-
 
 <div class="rango">
+Rango 2  
+Desde <input id="d2"> 
+Hasta <input id="h2">
 
-<b>Rango 2</b><br>
+Costo envío $
+<input id="c2" class="costo">
 
-Desde <input type="number" id="r2d">
-Hasta <input type="number" id="r2h"><br><br>
-
-<b>Costos envío Rango 2</b><br>
-
-Hasta 1kg <input type="number" id="r2c1" value="5090">
-Hasta 2kg <input type="number" id="r2c2" value="7000">
-Hasta 5kg <input type="number" id="r2c5" value="12000">
-Hasta 10kg <input type="number" id="r2c10" value="20000">
-
+<label>
+<input type="checkbox" id="iva2"> +21% IVA
+</label>
 </div>
-
 
 <div class="rango">
+Rango 3  
+Desde <input id="d3"> 
+Hasta <input id="h3">
 
-<b>Rango 3</b><br>
+Costo envío $
+<input id="c3" class="costo">
 
-Desde <input type="number" id="r3d">
-Hasta <input type="number" id="r3h"><br><br>
-
-<b>Costos envío Rango 3</b><br>
-
-Hasta 1kg <input type="number" id="r3c1" value="5090">
-Hasta 2kg <input type="number" id="r3c2" value="7000">
-Hasta 5kg <input type="number" id="r3c5" value="12000">
-Hasta 10kg <input type="number" id="r3c10" value="20000">
-
+<label>
+<input type="checkbox" id="iva3"> +21% IVA
+</label>
 </div>
-
 
 <div class="rango">
+Rango 4  
+Desde <input id="d4"> 
+Hasta <input id="h4">
 
-<b>Rango 4</b><br>
+Costo envío $
+<input id="c4" class="costo">
 
-Desde <input type="number" id="r4d">
-Hasta <input type="number" id="r4h"><br><br>
+<label>
+<input type="checkbox" id="iva4"> +21% IVA
+</label>
+</div>
 
-<b>Costos envío Rango 4</b><br>
+<br>
 
-Hasta 1kg <input type="number" id="r4c1" value="5090">
-Hasta 2kg <input type="number" id="r4c2" value="7000">
-Hasta 5kg <input type="number" id="r4c5" value="12000">
-Hasta 10kg <input type="number" id="r4c10" value="20000">
+<div class="rango">
+RESTO  
+
+Costo envío $
+<input id="cResto" class="costo">
+
+<label>
+<input type="checkbox" id="ivaResto"> +21% IVA
+</label>
 
 </div>
 
-</div>
+<br>
 
-
-<h2>Peso por Revista (kg)</h2>
-
-<div class="box">
-
-Daños <input type="number" step="0.1" data-revista="danos" value="0.5"><br>
-Privado <input type="number" step="0.1" data-revista="privado" value="0.5"><br>
-Procesal <input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
-Penal <input type="number" step="0.1" data-revista="penal" value="0.5"><br>
-Procesal Penal <input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
-Laboral <input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
-Lab.Act. <input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
-Penal Económico <input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
+<button onclick="calcular()">Calcular</button>
 
 </div>
 
-<button onclick="procesar()">Procesar</button>
+<div class="resultado" id="resultado"></div>
 
-<h2>Resultados</h2>
-
-<div id="resultados"></div>
 
 <script>
 
-let datos=[]
-
-function normalizar(texto){
-
-if(!texto) return ""
-
-return texto.toString().trim().toLowerCase()
-.normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-
-}
-
-function clasificarSuscripcion(texto){
-
-let t=normalizar(texto)
-
-if(t.includes("lab.act")) return "actualidad"
-if(t.includes("procesal penal")) return "procesal penal"
-if(t.includes("penal econom")) return "penal economico"
-if(t.includes("danos")) return "danos"
-if(t.includes("privado")) return "privado"
-if(t.includes("procesal")) return "procesal"
-if(t.includes("penal")) return "penal"
-if(t.includes("laboral")) return "laboral"
-
-return null
-
-}
-
-function detectarColumnas(obj){
-
-let columnas=Object.keys(obj)
-
-let cuentaCol=columnas.find(c=>normalizar(c).includes("cuenta"))
-let suscripcionCol=columnas.find(c=>normalizar(c).includes("suscrip"))
-let cpCol=columnas.find(c=>normalizar(c).includes("postal")||normalizar(c)=="cp")
-
-return{cuentaCol,suscripcionCol,cpCol}
-
-}
-
-document.getElementById("excelFile").addEventListener("change",function(e){
-
-const reader=new FileReader()
-
-reader.onload=function(event){
-
-const data=new Uint8Array(event.target.result)
-
-const workbook=XLSX.read(data,{type:'array'})
-
-const sheet=workbook.Sheets[workbook.SheetNames[0]]
-
-const json=XLSX.utils.sheet_to_json(sheet)
-
-const {cuentaCol,suscripcionCol,cpCol}=detectarColumnas(json[0])
-
-datos=json.map(row=>({
-
-cuenta:normalizar(row[cuentaCol]),
-suscripcion:clasificarSuscripcion(row[suscripcionCol]),
-cp:cpCol?parseInt(row[cpCol]):null
-
-})).filter(d=>d.suscripcion)
-
-alert("Archivo cargado")
-
-}
-
-reader.readAsArrayBuffer(e.target.files[0])
-
-})
-
-function costo(peso,c1,c2,c5,c10){
-
-if(peso<=1) return c1
-if(peso<=2) return c2
-if(peso<=5) return c5
-return c10
-
-}
-
-function calcular(lista,costos){
-
-let cuentas={}
-
-lista.forEach(d=>{
-
-if(!cuentas[d.cuenta]) cuentas[d.cuenta]=[]
-
-cuentas[d.cuenta].push(d.suscripcion)
-
-})
-
-let combinaciones={}
-let pesoTotal=0
-let costoTotal=0
-
-for(let c in cuentas){
-
-let revistas=[...new Set(cuentas[c])]
-
-revistas.sort()
-
-let clave=revistas.join(" + ")
-
-if(!combinaciones[clave]) combinaciones[clave]=0
-
-combinaciones[clave]++
-
-let peso=0
-
-revistas.forEach(r=>{
-
-let input=document.querySelector(`[data-revista="${r}"]`)
-
-peso+=parseFloat(input.value)
-
-})
-
-pesoTotal+=peso
-
-costoTotal+=costo(peso,costos.c1,costos.c2,costos.c5,costos.c10)
-
-}
-
-return{combinaciones,pesoTotal,costoTotal}
-
-}
-
-function resultado(titulo,res){
-
-let html="<div class='result'>"
-
-html+="<h3>"+titulo+"</h3>"
-
-for(let c in res.combinaciones){
-
-let nombre=c
-
-if(c.split(" + ").length==1) nombre=c+" solo"
-
-html+=nombre.toUpperCase()+" : <b>"+res.combinaciones[c]+"</b><br>"
-
-}
-
-html+="<br>Peso total: <b>"+res.pesoTotal.toFixed(2)+" kg</b>"
-html+="<br>Costo total envío: <b>$"+res.costoTotal.toLocaleString()+"</b>"
-
-html+="</div>"
-
-return html
-
-}
-
-function procesar(){
-
-let rangos=[
-
-{d:+r1d.value,h:+r1h.value,c1:+r1c1.value,c2:+r1c2.value,c5:+r1c5.value,c10:+r1c10.value},
-
-{d:+r2d.value,h:+r2h.value,c1:+r2c1.value,c2:+r2c2.value,c5:+r2c5.value,c10:+r2c10.value},
-
-{d:+r3d.value,h:+r3h.value,c1:+r3c1.value,c2:+r3c2.value,c5:+r3c5.value,c10:+r3c10.value},
-
-{d:+r4d.value,h:+r4h.value,c1:+r4c1.value,c2:+r4c2.value,c5:+r4c5.value,c10:+r4c10.value}
-
-]
-
-let usados=new Set()
+// EJEMPLO DE CODIGOS POSTALES
+// luego esto puede venir de un archivo o base
+let codigos = [
+1000,1100,1200,1300,1400,1500,
+2000,2100,2200,2300,2400,2500,
+3000,3100,3200,3300,3400,
+4000,4100,4200,4300
+];
+
+function calcular(){
+
+let total = codigos.length
+let usados = []
 
 let html=""
 
-rangos.forEach(r=>{
+for(let i=1;i<=4;i++){
 
-if(r.d && r.h){
+let d=parseInt(document.getElementById("d"+i).value)
+let h=parseInt(document.getElementById("h"+i).value)
+let costo=parseFloat(document.getElementById("c"+i).value)||0
+let iva=document.getElementById("iva"+i).checked
 
-let lista=datos.filter(x=>x.cp>=r.d && x.cp<=r.h)
+if(iva){
+costo = costo * 1.21
+}
 
-lista.forEach(x=>usados.add(x))
+if(!isNaN(d) && !isNaN(h)){
 
-let res=calcular(lista,r)
+let encontrados = codigos.filter(c=>c>=d && c<=h)
 
-html+=resultado("Rango desde "+r.d+" hasta "+r.h,res)
+usados = usados.concat(encontrados)
+
+let cantidad = encontrados.length
+let totalCosto = cantidad * costo
+
+html+=`
+<h3>Rango desde ${d} hasta ${h}</h3>
+Cantidad: ${cantidad}<br>
+Costo unitario: $${costo.toFixed(2)}<br>
+Total: $${totalCosto.toFixed(2)}
+<br><br>
+`
 
 }
 
-})
+}
 
-let resto=datos.filter(x=>!usados.has(x))
+// RESTO
 
-let costosDefault={c1:5090,c2:7000,c5:12000,c10:20000}
+let resto = codigos.filter(c=>!usados.includes(c))
 
-let resResto=calcular(resto,costosDefault)
+let costoR=parseFloat(document.getElementById("cResto").value)||0
+let ivaR=document.getElementById("ivaResto").checked
 
-html+=resultado("RESTO",resResto)
+if(ivaR){
+costoR = costoR * 1.21
+}
 
-document.getElementById("resultados").innerHTML=html
+let totalR = resto.length * costoR
+
+html+=`
+<h3>Resto</h3>
+Cantidad: ${resto.length}<br>
+Costo unitario: $${costoR.toFixed(2)}<br>
+Total: $${totalR.toFixed(2)}
+`
+
+document.getElementById("resultado").innerHTML=html
 
 }
 
@@ -374,3 +198,4 @@ document.getElementById("resultados").innerHTML=html
 
 </body>
 </html>
+

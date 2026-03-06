@@ -144,20 +144,16 @@ Hasta 10kg <input type="number" id="r4c10" value="20000">
 
 </div>
 
-<!-- BLOQUE EXPLÍCITO PARA RANGO 5 RESTO -->
+<!-- Bloque nuevo para COSTOS envío RESTO -->
 
-<div class="rango" style="background:#d0e7ff;">
+<div class="rango" style="background:#e0f7e0;">
 
-<b>Rango 5 (RESTO) - Configuración de Costos</b><br><br>
+<b>Costos envío RESTO (no incluidos en rangos 1 a 4)</b><br><br>
 
-<!-- No tiene rango desde-hasta porque es el resto -->
-
-<b>Costos envío Rango 5 (RESTO)</b><br>
-
-Hasta 1kg <input type="number" id="r5c1" value="5090">
-Hasta 2kg <input type="number" id="r5c2" value="7000">
-Hasta 5kg <input type="number" id="r5c5" value="12000">
-Hasta 10kg <input type="number" id="r5c10" value="20000">
+Hasta 1kg <input type="number" id="resto_c1" value="5090">
+Hasta 2kg <input type="number" id="resto_c2" value="7000">
+Hasta 5kg <input type="number" id="resto_c5" value="12000">
+Hasta 10kg <input type="number" id="resto_c10" value="20000">
 
 </div>
 
@@ -375,11 +371,15 @@ html+=resultado("Rango desde "+r.d+" hasta "+r.h,res)
 
 })
 
-// Rango 5 (RESTO)
-
+// COSTOS RESTO (paquetes fuera de rangos 1-4)
 let resto=datos.filter(x=>!usados.has(x))
 
-let costosResto={c1:+r5c1.value,c2:+r5c2.value,c5:+r5c5.value,c10:+r5c10.value}
+let costosResto={
+  c1:+document.getElementById('resto_c1').value,
+  c2:+document.getElementById('resto_c2').value,
+  c5:+document.getElementById('resto_c5').value,
+  c10:+document.getElementById('resto_c10').value
+}
 
 let resResto=calcular(resto,costosResto)
 

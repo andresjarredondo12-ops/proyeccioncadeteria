@@ -1,168 +1,210 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
-<title>Filtro Código Postal</title>
+<title>Calculador de Envíos</title>
 
 <style>
 
 body{
-font-family: Arial;
+font-family:Arial;
 margin:40px;
 }
 
-h2{
-margin-bottom:10px;
+.rango{
+margin-bottom:12px;
 }
 
 input{
 padding:5px;
-margin:5px;
-width:120px;
-}
-
-.costo{
+margin:3px;
 width:90px;
 }
 
-.rango{
-margin-bottom:10px;
+.costo{
+width:80px;
 }
 
 .resultado{
 margin-top:30px;
-border-top:1px solid #ccc;
 padding-top:20px;
+border-top:1px solid #ccc;
+}
+
+h3{
+margin-bottom:5px;
 }
 
 </style>
 
 </head>
 
+
 <body>
 
-<h2>Filtro Código Postal</h2>
+<h2>Configuración de Rangos</h2>
 
-<div>
 
 <div class="rango">
-Rango 1  
-Desde <input id="d1"> 
-Hasta <input id="h1">
+<strong>Rango 1</strong><br>
+
+Desde
+<input id="d1">
+
+Hasta
+<input id="h1">
 
 Costo envío $
 <input id="c1" class="costo">
 
 <label>
-<input type="checkbox" id="iva1"> +21% IVA
+<input type="checkbox" id="iva1">
+Sumar IVA 21%
 </label>
+
 </div>
 
+
 <div class="rango">
-Rango 2  
-Desde <input id="d2"> 
-Hasta <input id="h2">
+<strong>Rango 2</strong><br>
+
+Desde
+<input id="d2">
+
+Hasta
+<input id="h2">
 
 Costo envío $
 <input id="c2" class="costo">
 
 <label>
-<input type="checkbox" id="iva2"> +21% IVA
+<input type="checkbox" id="iva2">
+Sumar IVA 21%
 </label>
+
 </div>
 
+
 <div class="rango">
-Rango 3  
-Desde <input id="d3"> 
-Hasta <input id="h3">
+<strong>Rango 3</strong><br>
+
+Desde
+<input id="d3">
+
+Hasta
+<input id="h3">
 
 Costo envío $
 <input id="c3" class="costo">
 
 <label>
-<input type="checkbox" id="iva3"> +21% IVA
+<input type="checkbox" id="iva3">
+Sumar IVA 21%
 </label>
+
 </div>
 
+
 <div class="rango">
-Rango 4  
-Desde <input id="d4"> 
-Hasta <input id="h4">
+<strong>Rango 4</strong><br>
+
+Desde
+<input id="d4">
+
+Hasta
+<input id="h4">
 
 Costo envío $
 <input id="c4" class="costo">
 
 <label>
-<input type="checkbox" id="iva4"> +21% IVA
+<input type="checkbox" id="iva4">
+Sumar IVA 21%
 </label>
+
 </div>
 
-<br>
+
 
 <div class="rango">
-RESTO  
+<strong>RESTO</strong><br>
 
 Costo envío $
 <input id="cResto" class="costo">
 
 <label>
-<input type="checkbox" id="ivaResto"> +21% IVA
+<input type="checkbox" id="ivaResto">
+Sumar IVA 21%
 </label>
 
 </div>
 
-<br>
+
 
 <button onclick="calcular()">Calcular</button>
 
-</div>
 
 <div class="resultado" id="resultado"></div>
 
 
+
 <script>
 
-// EJEMPLO DE CODIGOS POSTALES
-// luego esto puede venir de un archivo o base
-let codigos = [
-1000,1100,1200,1300,1400,1500,
-2000,2100,2200,2300,2400,2500,
-3000,3100,3200,3300,3400,
-4000,4100,4200,4300
+let codigosPostales = [
+1000,1100,1200,1300,1400,
+1500,1600,1700,1800,
+2000,2100,2200,2300,
+3000,3100,3200,
+4000,4100,4200
 ];
+
+
+
+function aplicarIVA(costo, checkbox){
+
+if(checkbox){
+return costo * 1.21
+}
+
+return costo
+
+}
+
+
 
 function calcular(){
 
-let total = codigos.length
 let usados = []
-
-let html=""
+let html = ""
 
 for(let i=1;i<=4;i++){
 
-let d=parseInt(document.getElementById("d"+i).value)
-let h=parseInt(document.getElementById("h"+i).value)
-let costo=parseFloat(document.getElementById("c"+i).value)||0
-let iva=document.getElementById("iva"+i).checked
+let desde = parseInt(document.getElementById("d"+i).value)
+let hasta = parseInt(document.getElementById("h"+i).value)
 
-if(iva){
-costo = costo * 1.21
-}
+let costo = parseFloat(document.getElementById("c"+i).value) || 0
+let iva = document.getElementById("iva"+i).checked
 
-if(!isNaN(d) && !isNaN(h)){
+costo = aplicarIVA(costo, iva)
 
-let encontrados = codigos.filter(c=>c>=d && c<=h)
+
+if(!isNaN(desde) && !isNaN(hasta)){
+
+let encontrados = codigosPostales.filter(cp => cp >= desde && cp <= hasta)
 
 usados = usados.concat(encontrados)
 
 let cantidad = encontrados.length
-let totalCosto = cantidad * costo
 
-html+=`
-<h3>Rango desde ${d} hasta ${h}</h3>
+let total = cantidad * costo
+
+
+html += `
+<h3>Rango desde ${desde} hasta ${hasta}</h3>
 Cantidad: ${cantidad}<br>
 Costo unitario: $${costo.toFixed(2)}<br>
-Total: $${totalCosto.toFixed(2)}
+Total rango: $${total.toFixed(2)}
 <br><br>
 `
 
@@ -170,32 +212,33 @@ Total: $${totalCosto.toFixed(2)}
 
 }
 
-// RESTO
 
-let resto = codigos.filter(c=>!usados.includes(c))
 
-let costoR=parseFloat(document.getElementById("cResto").value)||0
-let ivaR=document.getElementById("ivaResto").checked
+let resto = codigosPostales.filter(cp => !usados.includes(cp))
 
-if(ivaR){
-costoR = costoR * 1.21
-}
+let costoResto = parseFloat(document.getElementById("cResto").value) || 0
+let ivaResto = document.getElementById("ivaResto").checked
 
-let totalR = resto.length * costoR
+costoResto = aplicarIVA(costoResto, ivaResto)
 
-html+=`
+let totalResto = resto.length * costoResto
+
+
+html += `
 <h3>Resto</h3>
 Cantidad: ${resto.length}<br>
-Costo unitario: $${costoR.toFixed(2)}<br>
-Total: $${totalR.toFixed(2)}
+Costo unitario: $${costoResto.toFixed(2)}<br>
+Total resto: $${totalResto.toFixed(2)}
 `
 
-document.getElementById("resultado").innerHTML=html
+
+document.getElementById("resultado").innerHTML = html
 
 }
 
 </script>
 
+
+
 </body>
 </html>
-

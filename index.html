@@ -54,22 +54,63 @@ margin-bottom:15px;
 
 <input type="file" id="excelFile" accept=".xlsx,.xls">
 
-<h2>Filtro Revistas</h2>
+<h2>Rangos de Código Postal</h2>
 
 <div class="box">
 
-<select id="revistasFiltro" multiple size="8">
+<div class="rango">
+<b>Rango 1</b><br>
+Desde <input type="number" id="r1d">
+Hasta <input type="number" id="r1h"><br><br>
 
-<option value="danos">Daños</option>
-<option value="privado">Privado</option>
-<option value="procesal">Procesal</option>
-<option value="penal">Penal</option>
-<option value="procesal penal">Procesal Penal</option>
-<option value="laboral">Laboral</option>
-<option value="actualidad">Lab.Act.</option>
-<option value="penal economico">Penal Económico</option>
+Hasta 1kg <input type="number" id="r1c1" value="5090">
+Hasta 2kg <input type="number" id="r1c2" value="7000">
+Hasta 5kg <input type="number" id="r1c5" value="12000">
+Hasta 10kg <input type="number" id="r1c10" value="20000">
+</div>
 
-</select>
+<div class="rango">
+<b>Rango 2</b><br>
+Desde <input type="number" id="r2d">
+Hasta <input type="number" id="r2h"><br><br>
+
+Hasta 1kg <input type="number" id="r2c1" value="5090">
+Hasta 2kg <input type="number" id="r2c2" value="7000">
+Hasta 5kg <input type="number" id="r2c5" value="12000">
+Hasta 10kg <input type="number" id="r2c10" value="20000">
+</div>
+
+<div class="rango">
+<b>Rango 3</b><br>
+Desde <input type="number" id="r3d">
+Hasta <input type="number" id="r3h"><br><br>
+
+Hasta 1kg <input type="number" id="r3c1" value="5090">
+Hasta 2kg <input type="number" id="r3c2" value="7000">
+Hasta 5kg <input type="number" id="r3c5" value="12000">
+Hasta 10kg <input type="number" id="r3c10" value="20000">
+</div>
+
+<div class="rango">
+<b>Rango 4</b><br>
+Desde <input type="number" id="r4d">
+Hasta <input type="number" id="r4h"><br><br>
+
+Hasta 1kg <input type="number" id="r4c1" value="5090">
+Hasta 2kg <input type="number" id="r4c2" value="7000">
+Hasta 5kg <input type="number" id="r4c5" value="12000">
+Hasta 10kg <input type="number" id="r4c10" value="20000">
+</div>
+
+<div class="rango" style="background:#e0f7e0;">
+<b>Costos envío RESTO</b><br><br>
+
+Hasta 1kg <input type="number" id="resto_c1" value="5090">
+Hasta 2kg <input type="number" id="resto_c2" value="7000">
+Hasta 5kg <input type="number" id="resto_c5" value="12000">
+Hasta 10kg <input type="number" id="resto_c10" value="20000">
+
+</div>
 
 </div>
 
@@ -103,10 +144,11 @@ function normalizar(texto){
 if(!texto) return ""
 
 return texto.toString()
-.trim()
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g,"")
+.replace(/\./g," ")
+.trim()
 
 }
 
@@ -114,54 +156,47 @@ function clasificarSuscripcion(texto){
 
 let t=normalizar(texto)
 
-/* ACTUALIDAD */
+/* Procesal Penal */
 
 if(
-t.includes("lab.act") ||
+t.includes("procesal penal") ||
+t.includes("proc penal")
+) return "procesal penal"
+
+/* Penal Económico */
+
+if(
+t.includes("penal econ") ||
+t.includes("penal econom")
+) return "penal economico"
+
+/* Lab.Act */
+
+if(
 t.includes("lab act") ||
 t.includes("actualidad")
 ) return "actualidad"
 
-/* PROCESAL PENAL */
+/* Daños */
 
-if(
-t.includes("procesal penal") ||
-t.includes("proc penal") ||
-t.includes("proc.penal") ||
-t.includes("proc penal")
-) return "procesal penal"
+if(t.includes("danos")) return "danos"
 
-/* PENAL ECONOMICO */
-
-if(
-t.includes("penal econom") ||
-t.includes("penal econ") ||
-t.includes("penal econ.")
-) return "penal economico"
-
-/* DAÑOS */
-
-if(
-t.includes("danos") ||
-t.includes("daño")
-) return "danos"
-
-/* PRIVADO */
+/* Privado */
 
 if(t.includes("privado")) return "privado"
 
-/* PROCESAL */
+/* Procesal */
 
 if(
 t.includes("procesal") ||
-t.includes("proc.")
+t.includes("proc")
 ) return "procesal"
 
-/* PENAL */
+/* Penal */
 
 if(t.includes("penal")) return "penal"
 
-/* LABORAL */
+/* Laboral */
 
 if(t.includes("laboral")) return "laboral"
 
@@ -297,13 +332,48 @@ return html
 
 function procesar(){
 
-let lista=datos
+let rangos=[
 
-let costos={c1:5090,c2:7000,c5:12000,c10:20000}
+{d:+r1d.value,h:+r1h.value,c1:+r1c1.value,c2:+r1c2.value,c5:+r1c5.value,c10:+r1c10.value},
+{d:+r2d.value,h:+r2h.value,c1:+r2c1.value,c2:+r2c2.value,c5:+r2c5.value,c10:+r2c10.value},
+{d:+r3d.value,h:+r3h.value,c1:+r3c1.value,c2:+r3c2.value,c5:+r3c5.value,c10:+r3c10.value},
+{d:+r4d.value,h:+r4h.value,c1:+r4c1.value,c2:+r4c2.value,c5:+r4c5.value,c10:+r4c10.value}
 
-let res=calcular(lista,costos)
+]
 
-document.getElementById("resultados").innerHTML=resultado("TOTAL",res)
+let usados=new Set()
+let html=""
+
+rangos.forEach(r=>{
+
+if(r.d && r.h){
+
+let lista=datos.filter(x=>x.cp>=r.d && x.cp<=r.h)
+
+lista.forEach(x=>usados.add(x))
+
+let res=calcular(lista,r)
+
+html+=resultado("Rango desde "+r.d+" hasta "+r.h,res)
+
+}
+
+})
+
+let resto=datos.filter(x=>!usados.has(x))
+
+let costosResto={
+c1:+resto_c1.value,
+c2:+resto_c2.value,
+c5:+resto_c5.value,
+c10:+resto_c10.value
+}
+
+let resResto=calcular(resto,costosResto)
+
+html+=resultado("RESTO",resResto)
+
+document.getElementById("resultados").innerHTML=html
 
 }
 

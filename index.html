@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Sistema de Combinaciones por Cuenta</title>
+<title>Sistema de Suscripciones</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -36,11 +36,13 @@ margin-top:10px;
 .result{
 background:#e9f5ff;
 padding:12px;
-margin-top:10px;
+margin-top:12px;
 }
 
 .rango{
-margin-top:6px;
+border:1px solid #ccc;
+padding:10px;
+margin-bottom:10px;
 }
 
 </style>
@@ -71,29 +73,64 @@ margin-top:6px;
 
 </div>
 
-
-<h2>Filtro Código Postal</h2>
+<h2>Rangos de Código Postal</h2>
 
 <div class="box">
 
 <div class="rango">
-Desde <input type="number" id="desde1">
-Hasta <input type="number" id="hasta1">
+
+<b>Rango 1</b><br>
+
+Desde <input type="number" id="r1d">
+Hasta <input type="number" id="r1h"><br>
+
+Hasta 1kg <input type="number" id="r1c1" value="5090">
+Hasta 2kg <input type="number" id="r1c2" value="7000">
+Hasta 5kg <input type="number" id="r1c5" value="12000">
+Hasta 10kg <input type="number" id="r1c10" value="20000">
+
 </div>
 
 <div class="rango">
-Desde <input type="number" id="desde2">
-Hasta <input type="number" id="hasta2">
+
+<b>Rango 2</b><br>
+
+Desde <input type="number" id="r2d">
+Hasta <input type="number" id="r2h"><br>
+
+Hasta 1kg <input type="number" id="r2c1" value="5090">
+Hasta 2kg <input type="number" id="r2c2" value="7000">
+Hasta 5kg <input type="number" id="r2c5" value="12000">
+Hasta 10kg <input type="number" id="r2c10" value="20000">
+
 </div>
 
 <div class="rango">
-Desde <input type="number" id="desde3">
-Hasta <input type="number" id="hasta3">
+
+<b>Rango 3</b><br>
+
+Desde <input type="number" id="r3d">
+Hasta <input type="number" id="r3h"><br>
+
+Hasta 1kg <input type="number" id="r3c1" value="5090">
+Hasta 2kg <input type="number" id="r3c2" value="7000">
+Hasta 5kg <input type="number" id="r3c5" value="12000">
+Hasta 10kg <input type="number" id="r3c10" value="20000">
+
 </div>
 
 <div class="rango">
-Desde <input type="number" id="desde4">
-Hasta <input type="number" id="hasta4">
+
+<b>Rango 4</b><br>
+
+Desde <input type="number" id="r4d">
+Hasta <input type="number" id="r4h"><br>
+
+Hasta 1kg <input type="number" id="r4c1" value="5090">
+Hasta 2kg <input type="number" id="r4c2" value="7000">
+Hasta 5kg <input type="number" id="r4c5" value="12000">
+Hasta 10kg <input type="number" id="r4c10" value="20000">
+
 </div>
 
 </div>
@@ -103,48 +140,14 @@ Hasta <input type="number" id="hasta4">
 
 <div class="box">
 
-Daños
-<input type="number" step="0.1" data-revista="danos" value="0.5"><br>
-
-Privado
-<input type="number" step="0.1" data-revista="privado" value="0.5"><br>
-
-Procesal
-<input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
-
-Penal
-<input type="number" step="0.1" data-revista="penal" value="0.5"><br>
-
-Procesal Penal
-<input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
-
-Laboral
-<input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
-
-Lab.Act.
-<input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
-
-Penal Económico
-<input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
-
-</div>
-
-
-<h2>Costos de Envío</h2>
-
-<div class="box">
-
-Hasta 1kg
-<input type="number" id="costo1" value="5090"><br>
-
-Hasta 2kg
-<input type="number" id="costo2" value="7000"><br>
-
-Hasta 5kg
-<input type="number" id="costo5" value="12000"><br>
-
-Hasta 10kg
-<input type="number" id="costo10" value="20000"><br>
+Daños <input type="number" step="0.1" data-revista="danos" value="0.5"><br>
+Privado <input type="number" step="0.1" data-revista="privado" value="0.5"><br>
+Procesal <input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
+Penal <input type="number" step="0.1" data-revista="penal" value="0.5"><br>
+Procesal Penal <input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
+Laboral <input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
+Lab.Act. <input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
+Penal Económico <input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
 
 </div>
 
@@ -161,11 +164,8 @@ function normalizar(texto){
 
 if(!texto) return ""
 
-return texto.toString()
-.trim()
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g,"")
+return texto.toString().trim().toLowerCase()
+.normalize("NFD").replace(/[\u0300-\u036f]/g,"")
 
 }
 
@@ -176,7 +176,6 @@ let t=normalizar(texto)
 if(t.includes("lab.act")) return "actualidad"
 if(t.includes("procesal penal")) return "procesal penal"
 if(t.includes("penal econom")) return "penal economico"
-
 if(t.includes("danos")) return "danos"
 if(t.includes("privado")) return "privado"
 if(t.includes("procesal")) return "procesal"
@@ -223,7 +222,7 @@ cp:cpCol?parseInt(row[cpCol]):null
 
 })).filter(d=>d.suscripcion)
 
-alert("Archivo cargado correctamente")
+alert("Archivo cargado")
 
 }
 
@@ -237,15 +236,22 @@ let select=document.getElementById("revistasFiltro")
 
 let arr=[]
 
-for(let o of select.selectedOptions){
-arr.push(o.value)
-}
+for(let o of select.selectedOptions) arr.push(o.value)
 
 return arr
 
 }
 
-function calcular(lista){
+function costoPorPeso(peso,c1,c2,c5,c10){
+
+if(peso<=1) return c1
+if(peso<=2) return c2
+if(peso<=5) return c5
+return c10
+
+}
+
+function calcular(lista,costos){
 
 let mapa={}
 
@@ -258,6 +264,8 @@ mapa[d.cuenta].push(d.suscripcion)
 })
 
 let combinaciones={}
+let pesoTotal=0
+let costoTotal=0
 
 for(let cuenta in mapa){
 
@@ -270,15 +278,6 @@ if(!combinaciones[clave]) combinaciones[clave]=0
 
 combinaciones[clave]++
 
-}
-
-let pesoTotal=0
-let totalEnvio=0
-
-for(let cuenta in mapa){
-
-let revistas=[...new Set(mapa[cuenta])]
-
 let peso=0
 
 revistas.forEach(r=>{
@@ -290,18 +289,11 @@ peso+=parseFloat(input.value)
 
 pesoTotal+=peso
 
-let costo=0
-
-if(peso<=1) costo=costo1.value
-else if(peso<=2) costo=costo2.value
-else if(peso<=5) costo=costo5.value
-else costo=costo10.value
-
-totalEnvio+=parseFloat(costo)
+costoTotal+=costoPorPeso(peso,costos.c1,costos.c2,costos.c5,costos.c10)
 
 }
 
-return{combinaciones,pesoTotal,totalEnvio}
+return{combinaciones,pesoTotal,costoTotal}
 
 }
 
@@ -322,7 +314,7 @@ html+=nombre.toUpperCase()+" : <b>"+res.combinaciones[c]+"</b><br>"
 }
 
 html+="<br>Peso total: <b>"+res.pesoTotal.toFixed(2)+" kg</b>"
-html+="<br>Costo total envío: <b>$"+res.totalEnvio.toLocaleString()+"</b>"
+html+="<br>Costo total envío: <b>$"+res.costoTotal.toLocaleString()+"</b>"
 
 html+="</div>"
 
@@ -345,10 +337,10 @@ return true
 
 let rangos=[
 
-{d:desde1.value,h:hasta1.value},
-{d:desde2.value,h:hasta2.value},
-{d:desde3.value,h:hasta3.value},
-{d:desde4.value,h:hasta4.value}
+{d:r1d.value,h:r1h.value,c1:+r1c1.value,c2:+r1c2.value,c5:+r1c5.value,c10:+r1c10.value},
+{d:r2d.value,h:r2h.value,c1:+r2c1.value,c2:+r2c2.value,c5:+r2c5.value,c10:+r2c10.value},
+{d:r3d.value,h:r3h.value,c1:+r3c1.value,c2:+r3c2.value,c5:+r3c5.value,c10:+r3c10.value},
+{d:r4d.value,h:r4h.value,c1:+r4c1.value,c2:+r4c2.value,c5:+r4c5.value,c10:+r4c10.value}
 
 ]
 
@@ -361,13 +353,13 @@ rangos.forEach(r=>{
 let d=parseInt(r.d)
 let h=parseInt(r.h)
 
-if(!isNaN(d) && !isNaN(h)){
+if(!isNaN(d)&&!isNaN(h)){
 
 let lista=base.filter(x=>x.cp>=d && x.cp<=h)
 
 lista.forEach(x=>usados.add(x))
 
-let res=calcular(lista)
+let res=calcular(lista,r)
 
 html+=bloqueResultado("Rango desde "+d+" hasta "+h,res)
 
@@ -377,7 +369,9 @@ html+=bloqueResultado("Rango desde "+d+" hasta "+h,res)
 
 let resto=base.filter(x=>!usados.has(x))
 
-let resResto=calcular(resto)
+let costosDefault={c1:5090,c2:7000,c5:12000,c10:20000}
+
+let resResto=calcular(resto,costosDefault)
 
 html+=bloqueResultado("RESTO",resResto)
 
@@ -389,4 +383,3 @@ document.getElementById("resultados").innerHTML=html
 
 </body>
 </html>
-

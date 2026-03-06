@@ -36,11 +36,11 @@ margin-top:10px;
 .result{
 background:#e9f5ff;
 padding:12px;
-margin-top:15px;
+margin-top:10px;
 }
 
 .rango{
-margin-bottom:8px;
+margin-top:6px;
 }
 
 </style>
@@ -77,23 +77,23 @@ margin-bottom:8px;
 <div class="box">
 
 <div class="rango">
-Desde <input type="number" id="r1d">
-Hasta <input type="number" id="r1h">
+Desde <input type="number" id="desde1">
+Hasta <input type="number" id="hasta1">
 </div>
 
 <div class="rango">
-Desde <input type="number" id="r2d">
-Hasta <input type="number" id="r2h">
+Desde <input type="number" id="desde2">
+Hasta <input type="number" id="hasta2">
 </div>
 
 <div class="rango">
-Desde <input type="number" id="r3d">
-Hasta <input type="number" id="r3h">
+Desde <input type="number" id="desde3">
+Hasta <input type="number" id="hasta3">
 </div>
 
 <div class="rango">
-Desde <input type="number" id="r4d">
-Hasta <input type="number" id="r4h">
+Desde <input type="number" id="desde4">
+Hasta <input type="number" id="hasta4">
 </div>
 
 </div>
@@ -103,14 +103,29 @@ Hasta <input type="number" id="r4h">
 
 <div class="box">
 
-Daños <input type="number" step="0.1" data-revista="danos" value="0.5"><br>
-Privado <input type="number" step="0.1" data-revista="privado" value="0.5"><br>
-Procesal <input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
-Penal <input type="number" step="0.1" data-revista="penal" value="0.5"><br>
-Procesal Penal <input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
-Laboral <input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
-Lab.Act. <input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
-Penal Económico <input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
+Daños
+<input type="number" step="0.1" data-revista="danos" value="0.5"><br>
+
+Privado
+<input type="number" step="0.1" data-revista="privado" value="0.5"><br>
+
+Procesal
+<input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
+
+Penal
+<input type="number" step="0.1" data-revista="penal" value="0.5"><br>
+
+Procesal Penal
+<input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
+
+Laboral
+<input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
+
+Lab.Act.
+<input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
+
+Penal Económico
+<input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
 
 </div>
 
@@ -119,16 +134,23 @@ Penal Económico <input type="number" step="0.1" data-revista="penal economico" 
 
 <div class="box">
 
-Hasta 1kg <input type="number" id="costo1" value="5090"><br>
-Hasta 2kg <input type="number" id="costo2" value="7000"><br>
-Hasta 5kg <input type="number" id="costo5" value="12000"><br>
-Hasta 10kg <input type="number" id="costo10" value="20000"><br>
+Hasta 1kg
+<input type="number" id="costo1" value="5090"><br>
+
+Hasta 2kg
+<input type="number" id="costo2" value="7000"><br>
+
+Hasta 5kg
+<input type="number" id="costo5" value="12000"><br>
+
+Hasta 10kg
+<input type="number" id="costo10" value="20000"><br>
 
 </div>
 
-
 <button onclick="procesar()">Procesar</button>
 
+<h2>Resultados</h2>
 <div id="resultados"></div>
 
 <script>
@@ -149,7 +171,7 @@ return texto.toString()
 
 function clasificarSuscripcion(texto){
 
-let t = normalizar(texto)
+let t=normalizar(texto)
 
 if(t.includes("lab.act")) return "actualidad"
 if(t.includes("procesal penal")) return "procesal penal"
@@ -167,37 +189,37 @@ return null
 
 function detectarColumnas(obj){
 
-let columnas = Object.keys(obj)
+let columnas=Object.keys(obj)
 
-let cuentaCol = columnas.find(c => normalizar(c).includes("cuenta"))
-let suscripcionCol = columnas.find(c => normalizar(c).includes("suscrip"))
-let cpCol = columnas.find(c => normalizar(c).includes("postal") || normalizar(c)=="cp")
+let cuentaCol=columnas.find(c=>normalizar(c).includes("cuenta"))
+let suscripcionCol=columnas.find(c=>normalizar(c).includes("suscrip"))
+let cpCol=columnas.find(c=>normalizar(c).includes("postal")||normalizar(c)=="cp")
 
-return {cuentaCol,suscripcionCol,cpCol}
+return{cuentaCol,suscripcionCol,cpCol}
 
 }
 
 document.getElementById("excelFile").addEventListener("change",function(e){
 
-const reader = new FileReader()
+const reader=new FileReader()
 
-reader.onload = function(event){
+reader.onload=function(event){
 
-const data = new Uint8Array(event.target.result)
+const data=new Uint8Array(event.target.result)
 
-const workbook = XLSX.read(data,{type:'array'})
+const workbook=XLSX.read(data,{type:'array'})
 
-const sheet = workbook.Sheets[workbook.SheetNames[0]]
+const sheet=workbook.Sheets[workbook.SheetNames[0]]
 
-const json = XLSX.utils.sheet_to_json(sheet)
+const json=XLSX.utils.sheet_to_json(sheet)
 
-const {cuentaCol,suscripcionCol,cpCol} = detectarColumnas(json[0])
+const {cuentaCol,suscripcionCol,cpCol}=detectarColumnas(json[0])
 
-datos = json.map(row => ({
+datos=json.map(row=>({
 
-cuenta: normalizar(row[cuentaCol]),
-suscripcion: clasificarSuscripcion(row[suscripcionCol]),
-cp: cpCol ? parseInt(row[cpCol]) : null
+cuenta:normalizar(row[cuentaCol]),
+suscripcion:clasificarSuscripcion(row[suscripcionCol]),
+cp:cpCol?parseInt(row[cpCol]):null
 
 })).filter(d=>d.suscripcion)
 
@@ -211,28 +233,15 @@ reader.readAsArrayBuffer(e.target.files[0])
 
 function obtenerRevistasFiltro(){
 
-let select = document.getElementById("revistasFiltro")
+let select=document.getElementById("revistasFiltro")
 
-let seleccionadas=[]
+let arr=[]
 
 for(let o of select.selectedOptions){
-seleccionadas.push(o.value)
+arr.push(o.value)
 }
 
-return seleccionadas
-
-}
-
-function obtenerRangos(){
-
-return [
-
-{desde:parseInt(r1d.value),hasta:parseInt(r1h.value)},
-{desde:parseInt(r2d.value),hasta:parseInt(r2h.value)},
-{desde:parseInt(r3d.value),hasta:parseInt(r3h.value)},
-{desde:parseInt(r4d.value),hasta:parseInt(r4h.value)}
-
-].filter(r=>!isNaN(r.desde)&&!isNaN(r.hasta))
+return arr
 
 }
 
@@ -253,7 +262,6 @@ let combinaciones={}
 for(let cuenta in mapa){
 
 let revistas=[...new Set(mapa[cuenta])]
-
 revistas.sort()
 
 let clave=revistas.join(" + ")
@@ -276,7 +284,6 @@ let peso=0
 revistas.forEach(r=>{
 
 let input=document.querySelector(`[data-revista="${r}"]`)
-
 peso+=parseFloat(input.value)
 
 })
@@ -294,11 +301,11 @@ totalEnvio+=parseFloat(costo)
 
 }
 
-return {combinaciones,pesoTotal,totalEnvio}
+return{combinaciones,pesoTotal,totalEnvio}
 
 }
 
-function mostrarResultado(titulo,res){
+function bloqueResultado(titulo,res){
 
 let html="<div class='result'>"
 
@@ -336,29 +343,43 @@ return true
 
 })
 
-let rangos=obtenerRangos()
+let rangos=[
 
-let usados=[]
+{d:desde1.value,h:hasta1.value},
+{d:desde2.value,h:hasta2.value},
+{d:desde3.value,h:hasta3.value},
+{d:desde4.value,h:hasta4.value}
+
+]
+
+let usados=new Set()
 
 let html=""
 
 rangos.forEach(r=>{
 
-let lista=base.filter(d=>d.cp>=r.desde && d.cp<=r.hasta)
+let d=parseInt(r.d)
+let h=parseInt(r.h)
 
-usados=usados.concat(lista)
+if(!isNaN(d) && !isNaN(h)){
+
+let lista=base.filter(x=>x.cp>=d && x.cp<=h)
+
+lista.forEach(x=>usados.add(x))
 
 let res=calcular(lista)
 
-html+=mostrarResultado("Rango desde "+r.desde+" hasta "+r.hasta,res)
+html+=bloqueResultado("Rango desde "+d+" hasta "+h,res)
+
+}
 
 })
 
-let resto=base.filter(d=>!usados.includes(d))
+let resto=base.filter(x=>!usados.has(x))
 
 let resResto=calcular(resto)
 
-html+=mostrarResultado("RESTO",resResto)
+html+=bloqueResultado("RESTO",resResto)
 
 document.getElementById("resultados").innerHTML=html
 
@@ -368,3 +389,4 @@ document.getElementById("resultados").innerHTML=html
 
 </body>
 </html>
+

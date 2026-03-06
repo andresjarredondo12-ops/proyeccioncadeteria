@@ -91,9 +91,8 @@ Hasta 2kg <input type="number" id="r1c2" value="7000">
 Hasta 5kg <input type="number" id="r1c5" value="12000">
 Hasta 10kg <input type="number" id="r1c10" value="20000">
 
-<label><input type="checkbox" id="r1iva"> Sumar IVA 21% al total</label>
-
 </div>
+
 
 <div class="rango">
 
@@ -109,9 +108,8 @@ Hasta 2kg <input type="number" id="r2c2" value="7000">
 Hasta 5kg <input type="number" id="r2c5" value="12000">
 Hasta 10kg <input type="number" id="r2c10" value="20000">
 
-<label><input type="checkbox" id="r2iva"> Sumar IVA 21% al total</label>
-
 </div>
+
 
 <div class="rango">
 
@@ -127,9 +125,8 @@ Hasta 2kg <input type="number" id="r3c2" value="7000">
 Hasta 5kg <input type="number" id="r3c5" value="12000">
 Hasta 10kg <input type="number" id="r3c10" value="20000">
 
-<label><input type="checkbox" id="r3iva"> Sumar IVA 21% al total</label>
-
 </div>
+
 
 <div class="rango">
 
@@ -145,26 +142,10 @@ Hasta 2kg <input type="number" id="r4c2" value="7000">
 Hasta 5kg <input type="number" id="r4c5" value="12000">
 Hasta 10kg <input type="number" id="r4c10" value="20000">
 
-<label><input type="checkbox" id="r4iva"> Sumar IVA 21% al total</label>
-
-</div>
-
-<div class="rango">
-
-<b>RESTO</b><br>
-
-<b>Costos envío RESTO</b><br>
-
-Hasta 1kg <input type="number" id="rRc1" value="5090">
-Hasta 2kg <input type="number" id="rRc2" value="7000">
-Hasta 5kg <input type="number" id="rRc5" value="12000">
-Hasta 10kg <input type="number" id="rRc10" value="20000">
-
-<label><input type="checkbox" id="rRiva"> Sumar IVA 21% al total</label>
-
 </div>
 
 </div>
+
 
 <h2>Peso por Revista (kg)</h2>
 
@@ -192,13 +173,18 @@ Penal Económico <input type="number" step="0.1" data-revista="penal economico" 
 let datos=[]
 
 function normalizar(texto){
+
 if(!texto) return ""
+
 return texto.toString().trim().toLowerCase()
 .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+
 }
 
 function clasificarSuscripcion(texto){
+
 let t=normalizar(texto)
+
 if(t.includes("lab.act")) return "actualidad"
 if(t.includes("procesal penal")) return "procesal penal"
 if(t.includes("penal econom")) return "penal economico"
@@ -207,117 +193,185 @@ if(t.includes("privado")) return "privado"
 if(t.includes("procesal")) return "procesal"
 if(t.includes("penal")) return "penal"
 if(t.includes("laboral")) return "laboral"
+
 return null
+
 }
 
 function detectarColumnas(obj){
+
 let columnas=Object.keys(obj)
+
 let cuentaCol=columnas.find(c=>normalizar(c).includes("cuenta"))
 let suscripcionCol=columnas.find(c=>normalizar(c).includes("suscrip"))
 let cpCol=columnas.find(c=>normalizar(c).includes("postal")||normalizar(c)=="cp")
+
 return{cuentaCol,suscripcionCol,cpCol}
+
 }
 
 document.getElementById("excelFile").addEventListener("change",function(e){
+
 const reader=new FileReader()
+
 reader.onload=function(event){
+
 const data=new Uint8Array(event.target.result)
+
 const workbook=XLSX.read(data,{type:'array'})
+
 const sheet=workbook.Sheets[workbook.SheetNames[0]]
+
 const json=XLSX.utils.sheet_to_json(sheet)
+
 const {cuentaCol,suscripcionCol,cpCol}=detectarColumnas(json[0])
+
 datos=json.map(row=>({
+
 cuenta:normalizar(row[cuentaCol]),
 suscripcion:clasificarSuscripcion(row[suscripcionCol]),
 cp:cpCol?parseInt(row[cpCol]):null
+
 })).filter(d=>d.suscripcion)
+
 alert("Archivo cargado")
+
 }
+
 reader.readAsArrayBuffer(e.target.files[0])
+
 })
 
 function costo(peso,c1,c2,c5,c10){
+
 if(peso<=1) return c1
 if(peso<=2) return c2
 if(peso<=5) return c5
 return c10
+
 }
 
 function calcular(lista,costos){
+
 let cuentas={}
+
 lista.forEach(d=>{
+
 if(!cuentas[d.cuenta]) cuentas[d.cuenta]=[]
+
 cuentas[d.cuenta].push(d.suscripcion)
+
 })
+
 let combinaciones={}
 let pesoTotal=0
 let costoTotal=0
+
 for(let c in cuentas){
+
 let revistas=[...new Set(cuentas[c])]
+
 revistas.sort()
+
 let clave=revistas.join(" + ")
+
 if(!combinaciones[clave]) combinaciones[clave]=0
+
 combinaciones[clave]++
+
 let peso=0
+
 revistas.forEach(r=>{
+
 let input=document.querySelector(`[data-revista="${r}"]`)
+
 peso+=parseFloat(input.value)
+
 })
+
 pesoTotal+=peso
+
 costoTotal+=costo(peso,costos.c1,costos.c2,costos.c5,costos.c10)
-}
-return{combinaciones,pesoTotal,costoTotal}
+
 }
 
-function resultado(titulo,res,iva){
-let total=res.costoTotal
-if(iva) total=total*1.21
-let html="<div class='result'>"
-html+="<h3>"+titulo+"</h3>"
-for(let c in res.combinaciones){
-let nombre=c
-if(c.split(" + ").length==1) nombre=c+" solo"
-html+=nombre.toUpperCase()+" : <b>"+res.combinaciones[c]+"</b><br>"
+return{combinaciones,pesoTotal,costoTotal}
+
 }
+
+function resultado(titulo,res){
+
+let html="<div class='result'>"
+
+html+="<h3>"+titulo+"</h3>"
+
+for(let c in res.combinaciones){
+
+let nombre=c
+
+if(c.split(" + ").length==1) nombre=c+" solo"
+
+html+=nombre.toUpperCase()+" : <b>"+res.combinaciones[c]+"</b><br>"
+
+}
+
 html+="<br>Peso total: <b>"+res.pesoTotal.toFixed(2)+" kg</b>"
-html+="<br>Costo total envío: <b>$"+Math.round(total).toLocaleString()+"</b>"
+html+="<br>Costo total envío: <b>$"+res.costoTotal.toLocaleString()+"</b>"
+
 html+="</div>"
+
 return html
+
 }
 
 function procesar(){
+
 let rangos=[
-{d:+r1d.value,h:+r1h.value,c1:+r1c1.value,c2:+r1c2.value,c5:+r1c5.value,c10:+r1c10.value,iva:r1iva.checked},
-{d:+r2d.value,h:+r2h.value,c1:+r2c1.value,c2:+r2c2.value,c5:+r2c5.value,c10:+r2c10.value,iva:r2iva.checked},
-{d:+r3d.value,h:+r3h.value,c1:+r3c1.value,c2:+r3c2.value,c5:+r3c5.value,c10:+r3c10.value,iva:r3iva.checked},
-{d:+r4d.value,h:+r4h.value,c1:+r4c1.value,c2:+r4c2.value,c5:+r4c5.value,c10:+r4c10.value,iva:r4iva.checked}
+
+{d:+r1d.value,h:+r1h.value,c1:+r1c1.value,c2:+r1c2.value,c5:+r1c5.value,c10:+r1c10.value},
+
+{d:+r2d.value,h:+r2h.value,c1:+r2c1.value,c2:+r2c2.value,c5:+r2c5.value,c10:+r2c10.value},
+
+{d:+r3d.value,h:+r3h.value,c1:+r3c1.value,c2:+r3c2.value,c5:+r3c5.value,c10:+r3c10.value},
+
+{d:+r4d.value,h:+r4h.value,c1:+r4c1.value,c2:+r4c2.value,c5:+r4c5.value,c10:+r4c10.value}
+
 ]
 
 let usados=new Set()
+
 let html=""
+
 rangos.forEach(r=>{
+
 if(r.d && r.h){
+
 let lista=datos.filter(x=>x.cp>=r.d && x.cp<=r.h)
+
 lista.forEach(x=>usados.add(x))
+
 let res=calcular(lista,r)
-html+=resultado("Rango desde "+r.d+" hasta "+r.h,res,r.iva)
+
+html+=resultado("Rango desde "+r.d+" hasta "+r.h,res)
+
 }
+
 })
 
 let resto=datos.filter(x=>!usados.has(x))
-let costosResto={
-c1:+rRc1.value,
-c2:+rRc2.value,
-c5:+rRc5.value,
-c10:+rRc10.value
-}
-let resResto=calcular(resto,costosResto)
-html+=resultado("RESTO",resResto,rRiva.checked)
+
+let costosDefault={c1:5090,c2:7000,c5:12000,c10:20000}
+
+let resResto=calcular(resto,costosDefault)
+
+html+=resultado("RESTO",resResto)
 
 document.getElementById("resultados").innerHTML=html
+
 }
 
 </script>
 
 </body>
 </html>
+

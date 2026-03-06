@@ -39,6 +39,12 @@ padding:12px;
 margin-top:10px;
 }
 
+.rango{
+border:1px solid #ccc;
+padding:10px;
+margin-top:10px;
+}
+
 </style>
 </head>
 
@@ -67,20 +73,29 @@ margin-top:10px;
 
 </div>
 
-<h2>Filtro Código Postal</h2>
+<h2>Rangos de Código Postal</h2>
 
 <div class="box">
 
-CP Exacto:
-<input type="number" id="cpExacto">
+<div class="rango">
+Rango 1 Desde <input type="number" id="r1d">
+Hasta <input type="number" id="r1h">
+</div>
 
-<br>
+<div class="rango">
+Rango 2 Desde <input type="number" id="r2d">
+Hasta <input type="number" id="r2h">
+</div>
 
-Desde:
-<input type="number" id="cpDesde">
+<div class="rango">
+Rango 3 Desde <input type="number" id="r3d">
+Hasta <input type="number" id="r3h">
+</div>
 
-Hasta:
-<input type="number" id="cpHasta">
+<div class="rango">
+Rango 4 Desde <input type="number" id="r4d">
+Hasta <input type="number" id="r4h">
+</div>
 
 </div>
 
@@ -88,29 +103,14 @@ Hasta:
 
 <div class="box">
 
-Daños
-<input type="number" step="0.1" data-revista="danos" value="0.5"><br>
-
-Privado
-<input type="number" step="0.1" data-revista="privado" value="0.5"><br>
-
-Procesal
-<input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
-
-Penal
-<input type="number" step="0.1" data-revista="penal" value="0.5"><br>
-
-Procesal Penal
-<input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
-
-Laboral
-<input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
-
-Lab.Act.
-<input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
-
-Penal Económico
-<input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
+Daños <input type="number" step="0.1" data-revista="danos" value="0.5"><br>
+Privado <input type="number" step="0.1" data-revista="privado" value="0.5"><br>
+Procesal <input type="number" step="0.1" data-revista="procesal" value="0.5"><br>
+Penal <input type="number" step="0.1" data-revista="penal" value="0.5"><br>
+Procesal Penal <input type="number" step="0.1" data-revista="procesal penal" value="0.5"><br>
+Laboral <input type="number" step="0.1" data-revista="laboral" value="0.5"><br>
+Lab.Act. <input type="number" step="0.1" data-revista="actualidad" value="0.5"><br>
+Penal Económico <input type="number" step="0.1" data-revista="penal economico" value="0.5"><br>
 
 </div>
 
@@ -118,60 +118,35 @@ Penal Económico
 
 <div class="box">
 
-Hasta 1kg
-<input type="number" id="costo1" value="5090"><br>
-
-Hasta 2kg
-<input type="number" id="costo2" value="7000"><br>
-
-Hasta 5kg
-<input type="number" id="costo5" value="12000"><br>
-
-Hasta 10kg
-<input type="number" id="costo10" value="20000"><br>
+Hasta 1kg <input type="number" id="costo1" value="5090"><br>
+Hasta 2kg <input type="number" id="costo2" value="7000"><br>
+Hasta 5kg <input type="number" id="costo5" value="12000"><br>
+Hasta 10kg <input type="number" id="costo10" value="20000"><br>
 
 </div>
 
 <button onclick="procesar()">Procesar</button>
 
-<h2>Combinaciones Exactas</h2>
-<div id="resultadoCombinaciones" class="result"></div>
+<h2>Resultados</h2>
 
-<h2>Resumen Envíos</h2>
-<div id="resultadoEnvio" class="result"></div>
+<div id="resultados"></div>
 
 <script>
 
-let datos = []
+let datos=[]
 
 function normalizar(texto){
-
 if(!texto) return ""
-
-return texto.toString()
-.trim()
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g,"")
-
+return texto.toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
 }
 
 function clasificarSuscripcion(texto){
 
-let t = normalizar(texto)
+let t=normalizar(texto)
 
-/* DETECCIÓN ESPECÍFICA LAB.ACT. */
-
-if(
-t.includes("lab.act.") ||
-t.includes("lab.act") ||
-t.includes("lab. act.") ||
-t.includes("lab act")
-) return "actualidad"
-
+if(t.includes("lab.act")) return "actualidad"
 if(t.includes("procesal penal")) return "procesal penal"
 if(t.includes("penal econom")) return "penal economico"
-
 if(t.includes("danos")) return "danos"
 if(t.includes("privado")) return "privado"
 if(t.includes("procesal")) return "procesal"
@@ -184,58 +159,41 @@ return null
 
 function detectarColumnas(obj){
 
-let columnas = Object.keys(obj)
+let columnas=Object.keys(obj)
 
-let cuentaCol = columnas.find(c => normalizar(c).includes("cuenta"))
-let suscripcionCol = columnas.find(c => normalizar(c).includes("suscrip"))
-let cpCol = columnas.find(c =>
-normalizar(c).includes("postal") ||
-normalizar(c) === "cp"
-)
+let cuentaCol=columnas.find(c=>normalizar(c).includes("cuenta"))
+let suscripcionCol=columnas.find(c=>normalizar(c).includes("suscrip"))
+let cpCol=columnas.find(c=>normalizar(c).includes("postal")||normalizar(c)=="cp")
 
-return {cuentaCol,suscripcionCol,cpCol}
+return{cuentaCol,suscripcionCol,cpCol}
 
 }
 
 document.getElementById("excelFile").addEventListener("change",function(e){
 
-const reader = new FileReader()
+const reader=new FileReader()
 
-reader.onload = function(event){
+reader.onload=function(event){
 
-const data = new Uint8Array(event.target.result)
+const data=new Uint8Array(event.target.result)
 
-const workbook = XLSX.read(data,{type:'array'})
+const workbook=XLSX.read(data,{type:'array'})
 
-const sheet = workbook.Sheets[workbook.SheetNames[0]]
+const sheet=workbook.Sheets[workbook.SheetNames[0]]
 
-const json = XLSX.utils.sheet_to_json(sheet)
+const json=XLSX.utils.sheet_to_json(sheet)
 
-if(json.length === 0){
+const {cuentaCol,suscripcionCol,cpCol}=detectarColumnas(json[0])
 
-alert("Archivo vacío")
-return
+datos=json.map(row=>({
 
-}
-
-const {cuentaCol,suscripcionCol,cpCol} = detectarColumnas(json[0])
-
-if(!cuentaCol || !suscripcionCol){
-
-alert("No se detectaron columnas de Cuenta o Suscripción")
-return
-
-}
-
-datos = json.map(row => ({
-
-cuenta: normalizar(row[cuentaCol]),
-suscripcion: clasificarSuscripcion(row[suscripcionCol]),
-cp: cpCol ? parseInt(row[cpCol]) : null
+cuenta:normalizar(row[cuentaCol]),
+suscripcion:clasificarSuscripcion(row[suscripcionCol]),
+cp:cpCol?parseInt(row[cpCol]):null
 
 })).filter(d=>d.suscripcion)
 
-alert("Archivo cargado correctamente")
+alert("Archivo cargado")
 
 }
 
@@ -245,161 +203,147 @@ reader.readAsArrayBuffer(e.target.files[0])
 
 function obtenerRevistasFiltro(){
 
-let select = document.getElementById("revistasFiltro")
+let select=document.getElementById("revistasFiltro")
 
-let seleccionadas = []
+let arr=[]
 
 for(let o of select.selectedOptions){
+arr.push(o.value)
+}
 
-seleccionadas.push(o.value)
+return arr
 
 }
 
-return seleccionadas
+function obtenerRangos(){
+
+return [
+
+{d:parseInt(r1d.value),h:parseInt(r1h.value),nombre:"Rango 1"},
+{d:parseInt(r2d.value),h:parseInt(r2h.value),nombre:"Rango 2"},
+{d:parseInt(r3d.value),h:parseInt(r3h.value),nombre:"Rango 3"},
+{d:parseInt(r4d.value),h:parseInt(r4h.value),nombre:"Rango 4"}
+
+].filter(r=>!isNaN(r.d)&&!isNaN(r.h))
 
 }
 
-function filtrarDatos(){
+function calcularEnvio(mapa){
 
-let revistasFiltro = obtenerRevistasFiltro()
+let totalEnvio=0
+let pesoTotal=0
 
-let cpExacto = document.getElementById("cpExacto").value
-let cpDesde = document.getElementById("cpDesde").value
-let cpHasta = document.getElementById("cpHasta").value
+for(let cuenta in mapa){
 
-return datos.filter(d=>{
+let revistas=[...new Set(mapa[cuenta])]
 
-if(revistasFiltro.length){
+let pesoCuenta=0
 
-if(!revistasFiltro.includes(d.suscripcion)) return false
+revistas.forEach(r=>{
 
-}
+let input=document.querySelector(`[data-revista="${r}"]`)
 
-if(cpExacto){
-
-if(d.cp != cpExacto) return false
-
-}
-
-if(cpDesde){
-
-if(d.cp < cpDesde) return false
-
-}
-
-if(cpHasta){
-
-if(d.cp > cpHasta) return false
-
-}
-
-return true
+pesoCuenta+=parseFloat(input.value)
 
 })
+
+pesoTotal+=pesoCuenta
+
+let costo=0
+
+if(pesoCuenta<=1)costo=costo1.value
+else if(pesoCuenta<=2)costo=costo2.value
+else if(pesoCuenta<=5)costo=costo5.value
+else costo=costo10.value
+
+totalEnvio+=parseFloat(costo)
+
+}
+
+return{pesoTotal,totalEnvio}
 
 }
 
 function procesar(){
 
-let filtrados = filtrarDatos()
+let revistasFiltro=obtenerRevistasFiltro()
 
-let mapaCuentas = {}
+let filtrados=datos.filter(d=>{
 
-filtrados.forEach(d=>{
+if(revistasFiltro.length&&!revistasFiltro.includes(d.suscripcion))
+return false
 
-if(!mapaCuentas[d.cuenta]){
-
-mapaCuentas[d.cuenta] = []
-
-}
-
-mapaCuentas[d.cuenta].push(d.suscripcion)
+return true
 
 })
 
-let combinaciones = {}
+let rangos=obtenerRangos()
 
-for(let cuenta in mapaCuentas){
+let usados=new Set()
 
-let revistas = [...new Set(mapaCuentas[cuenta])]
+let html=""
+
+function analizar(lista,titulo){
+
+let mapa={}
+
+lista.forEach(d=>{
+
+if(!mapa[d.cuenta])mapa[d.cuenta]=[]
+
+mapa[d.cuenta].push(d.suscripcion)
+
+})
+
+let combinaciones={}
+
+for(let cuenta in mapa){
+
+let revistas=[...new Set(mapa[cuenta])]
 
 revistas.sort()
 
-let clave = revistas.join(" + ")
+let clave=revistas.join(" + ")
 
-if(!combinaciones[clave]){
-
-combinaciones[clave] = 0
-
-}
+if(!combinaciones[clave])combinaciones[clave]=0
 
 combinaciones[clave]++
 
 }
 
-let html = ""
+let env=calcularEnvio(mapa)
 
-for(let comb in combinaciones){
+html+="<div class='result'>"
+html+="<h3>"+titulo+"</h3>"
 
-let nombre = comb
+for(let c in combinaciones){
 
-if(comb.split(" + ").length === 1){
-
-nombre = comb + " solo"
-
-}
-
-html += nombre.toUpperCase()+" : <b>"+combinaciones[comb]+"</b><br>"
+html+=c.toUpperCase()+" : <b>"+combinaciones[c]+"</b><br>"
 
 }
 
-document.getElementById("resultadoCombinaciones").innerHTML = html
+html+="<br>Peso total: <b>"+env.pesoTotal.toFixed(2)+" kg</b>"
+html+="<br>Costo envío: <b>$"+env.totalEnvio.toLocaleString()+"</b>"
 
-let totalEnvio = 0
-let pesoTotal = 0
-
-for(let cuenta in mapaCuentas){
-
-let revistas = [...new Set(mapaCuentas[cuenta])]
-
-let pesoCuenta = 0
-
-revistas.forEach(r=>{
-
-let input = document.querySelector(`[data-revista="${r}"]`)
-
-if(input){
-
-pesoCuenta += parseFloat(input.value)
+html+="</div>"
 
 }
+
+rangos.forEach(r=>{
+
+let lista=filtrados.filter(d=>d.cp>=r.d&&d.cp<=r.h)
+
+lista.forEach(d=>usados.add(d))
+
+analizar(lista,r.nombre+" ("+r.d+"-"+r.h+")")
 
 })
 
-pesoTotal += pesoCuenta
+let resto=filtrados.filter(d=>!usados.has(d))
 
-let costo = 0
+analizar(resto,"RESTO CP")
 
-if(pesoCuenta<=1)
-costo = parseFloat(document.getElementById("costo1").value)
-
-else if(pesoCuenta<=2)
-costo = parseFloat(document.getElementById("costo2").value)
-
-else if(pesoCuenta<=5)
-costo = parseFloat(document.getElementById("costo5").value)
-
-else
-costo = parseFloat(document.getElementById("costo10").value)
-
-totalEnvio += costo
-
-}
-
-document.getElementById("resultadoEnvio").innerHTML=
-
-"Peso total: <b>"+pesoTotal.toFixed(2)+" kg</b><br>"+
-"Costo total envío: <b>$"+totalEnvio.toLocaleString()+"</b>"
+document.getElementById("resultados").innerHTML=html
 
 }
 

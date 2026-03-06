@@ -42,7 +42,7 @@ margin-top:12px;
 .rango{
 border:1px solid #ccc;
 padding:10px;
-margin-bottom:10px;
+margin-bottom:15px;
 }
 
 </style>
@@ -82,7 +82,9 @@ margin-bottom:10px;
 <b>Rango 1</b><br>
 
 Desde <input type="number" id="r1d">
-Hasta <input type="number" id="r1h"><br>
+Hasta <input type="number" id="r1h"><br><br>
+
+<b>Costos envío Rango 1</b><br>
 
 Hasta 1kg <input type="number" id="r1c1" value="5090">
 Hasta 2kg <input type="number" id="r1c2" value="7000">
@@ -91,12 +93,15 @@ Hasta 10kg <input type="number" id="r1c10" value="20000">
 
 </div>
 
+
 <div class="rango">
 
 <b>Rango 2</b><br>
 
 Desde <input type="number" id="r2d">
-Hasta <input type="number" id="r2h"><br>
+Hasta <input type="number" id="r2h"><br><br>
+
+<b>Costos envío Rango 2</b><br>
 
 Hasta 1kg <input type="number" id="r2c1" value="5090">
 Hasta 2kg <input type="number" id="r2c2" value="7000">
@@ -105,12 +110,15 @@ Hasta 10kg <input type="number" id="r2c10" value="20000">
 
 </div>
 
+
 <div class="rango">
 
 <b>Rango 3</b><br>
 
 Desde <input type="number" id="r3d">
-Hasta <input type="number" id="r3h"><br>
+Hasta <input type="number" id="r3h"><br><br>
+
+<b>Costos envío Rango 3</b><br>
 
 Hasta 1kg <input type="number" id="r3c1" value="5090">
 Hasta 2kg <input type="number" id="r3c2" value="7000">
@@ -119,12 +127,15 @@ Hasta 10kg <input type="number" id="r3c10" value="20000">
 
 </div>
 
+
 <div class="rango">
 
 <b>Rango 4</b><br>
 
 Desde <input type="number" id="r4d">
-Hasta <input type="number" id="r4h"><br>
+Hasta <input type="number" id="r4h"><br><br>
+
+<b>Costos envío Rango 4</b><br>
 
 Hasta 1kg <input type="number" id="r4c1" value="5090">
 Hasta 2kg <input type="number" id="r4c2" value="7000">
@@ -154,6 +165,7 @@ Penal Económico <input type="number" step="0.1" data-revista="penal economico" 
 <button onclick="procesar()">Procesar</button>
 
 <h2>Resultados</h2>
+
 <div id="resultados"></div>
 
 <script>
@@ -230,19 +242,7 @@ reader.readAsArrayBuffer(e.target.files[0])
 
 })
 
-function obtenerRevistasFiltro(){
-
-let select=document.getElementById("revistasFiltro")
-
-let arr=[]
-
-for(let o of select.selectedOptions) arr.push(o.value)
-
-return arr
-
-}
-
-function costoPorPeso(peso,c1,c2,c5,c10){
+function costo(peso,c1,c2,c5,c10){
 
 if(peso<=1) return c1
 if(peso<=2) return c2
@@ -253,13 +253,13 @@ return c10
 
 function calcular(lista,costos){
 
-let mapa={}
+let cuentas={}
 
 lista.forEach(d=>{
 
-if(!mapa[d.cuenta]) mapa[d.cuenta]=[]
+if(!cuentas[d.cuenta]) cuentas[d.cuenta]=[]
 
-mapa[d.cuenta].push(d.suscripcion)
+cuentas[d.cuenta].push(d.suscripcion)
 
 })
 
@@ -267,9 +267,10 @@ let combinaciones={}
 let pesoTotal=0
 let costoTotal=0
 
-for(let cuenta in mapa){
+for(let c in cuentas){
 
-let revistas=[...new Set(mapa[cuenta])]
+let revistas=[...new Set(cuentas[c])]
+
 revistas.sort()
 
 let clave=revistas.join(" + ")
@@ -283,13 +284,14 @@ let peso=0
 revistas.forEach(r=>{
 
 let input=document.querySelector(`[data-revista="${r}"]`)
+
 peso+=parseFloat(input.value)
 
 })
 
 pesoTotal+=peso
 
-costoTotal+=costoPorPeso(peso,costos.c1,costos.c2,costos.c5,costos.c10)
+costoTotal+=costo(peso,costos.c1,costos.c2,costos.c5,costos.c10)
 
 }
 
@@ -297,7 +299,7 @@ return{combinaciones,pesoTotal,costoTotal}
 
 }
 
-function bloqueResultado(titulo,res){
+function resultado(titulo,res){
 
 let html="<div class='result'>"
 
@@ -324,23 +326,15 @@ return html
 
 function procesar(){
 
-let revistasFiltro=obtenerRevistasFiltro()
-
-let base=datos.filter(d=>{
-
-if(revistasFiltro.length && !revistasFiltro.includes(d.suscripcion))
-return false
-
-return true
-
-})
-
 let rangos=[
 
-{d:r1d.value,h:r1h.value,c1:+r1c1.value,c2:+r1c2.value,c5:+r1c5.value,c10:+r1c10.value},
-{d:r2d.value,h:r2h.value,c1:+r2c1.value,c2:+r2c2.value,c5:+r2c5.value,c10:+r2c10.value},
-{d:r3d.value,h:r3h.value,c1:+r3c1.value,c2:+r3c2.value,c5:+r3c5.value,c10:+r3c10.value},
-{d:r4d.value,h:r4h.value,c1:+r4c1.value,c2:+r4c2.value,c5:+r4c5.value,c10:+r4c10.value}
+{d:+r1d.value,h:+r1h.value,c1:+r1c1.value,c2:+r1c2.value,c5:+r1c5.value,c10:+r1c10.value},
+
+{d:+r2d.value,h:+r2h.value,c1:+r2c1.value,c2:+r2c2.value,c5:+r2c5.value,c10:+r2c10.value},
+
+{d:+r3d.value,h:+r3h.value,c1:+r3c1.value,c2:+r3c2.value,c5:+r3c5.value,c10:+r3c10.value},
+
+{d:+r4d.value,h:+r4h.value,c1:+r4c1.value,c2:+r4c2.value,c5:+r4c5.value,c10:+r4c10.value}
 
 ]
 
@@ -350,30 +344,27 @@ let html=""
 
 rangos.forEach(r=>{
 
-let d=parseInt(r.d)
-let h=parseInt(r.h)
+if(r.d && r.h){
 
-if(!isNaN(d)&&!isNaN(h)){
-
-let lista=base.filter(x=>x.cp>=d && x.cp<=h)
+let lista=datos.filter(x=>x.cp>=r.d && x.cp<=r.h)
 
 lista.forEach(x=>usados.add(x))
 
 let res=calcular(lista,r)
 
-html+=bloqueResultado("Rango desde "+d+" hasta "+h,res)
+html+=resultado("Rango desde "+r.d+" hasta "+r.h,res)
 
 }
 
 })
 
-let resto=base.filter(x=>!usados.has(x))
+let resto=datos.filter(x=>!usados.has(x))
 
 let costosDefault={c1:5090,c2:7000,c5:12000,c10:20000}
 
 let resResto=calcular(resto,costosDefault)
 
-html+=bloqueResultado("RESTO",resResto)
+html+=resultado("RESTO",resResto)
 
 document.getElementById("resultados").innerHTML=html
 

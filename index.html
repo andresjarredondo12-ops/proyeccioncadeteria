@@ -36,13 +36,11 @@ margin-top:10px;
 .result{
 background:#e9f5ff;
 padding:12px;
-margin-top:10px;
+margin-top:15px;
 }
 
 .rango{
-border:1px solid #ccc;
-padding:10px;
-margin-top:10px;
+margin-bottom:8px;
 }
 
 </style>
@@ -73,31 +71,33 @@ margin-top:10px;
 
 </div>
 
-<h2>Rangos de Código Postal</h2>
+
+<h2>Filtro Código Postal</h2>
 
 <div class="box">
 
 <div class="rango">
-Rango 1 Desde <input type="number" id="r1d">
+Desde <input type="number" id="r1d">
 Hasta <input type="number" id="r1h">
 </div>
 
 <div class="rango">
-Rango 2 Desde <input type="number" id="r2d">
+Desde <input type="number" id="r2d">
 Hasta <input type="number" id="r2h">
 </div>
 
 <div class="rango">
-Rango 3 Desde <input type="number" id="r3d">
+Desde <input type="number" id="r3d">
 Hasta <input type="number" id="r3h">
 </div>
 
 <div class="rango">
-Rango 4 Desde <input type="number" id="r4d">
+Desde <input type="number" id="r4d">
 Hasta <input type="number" id="r4h">
 </div>
 
 </div>
+
 
 <h2>Peso por Revista (kg)</h2>
 
@@ -114,6 +114,7 @@ Penal Económico <input type="number" step="0.1" data-revista="penal economico" 
 
 </div>
 
+
 <h2>Costos de Envío</h2>
 
 <div class="box">
@@ -125,9 +126,8 @@ Hasta 10kg <input type="number" id="costo10" value="20000"><br>
 
 </div>
 
-<button onclick="procesar()">Procesar</button>
 
-<h2>Resultados</h2>
+<button onclick="procesar()">Procesar</button>
 
 <div id="resultados"></div>
 
@@ -136,17 +136,25 @@ Hasta 10kg <input type="number" id="costo10" value="20000"><br>
 let datos=[]
 
 function normalizar(texto){
+
 if(!texto) return ""
-return texto.toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+
+return texto.toString()
+.trim()
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g,"")
+
 }
 
 function clasificarSuscripcion(texto){
 
-let t=normalizar(texto)
+let t = normalizar(texto)
 
 if(t.includes("lab.act")) return "actualidad"
 if(t.includes("procesal penal")) return "procesal penal"
 if(t.includes("penal econom")) return "penal economico"
+
 if(t.includes("danos")) return "danos"
 if(t.includes("privado")) return "privado"
 if(t.includes("procesal")) return "procesal"
@@ -159,41 +167,41 @@ return null
 
 function detectarColumnas(obj){
 
-let columnas=Object.keys(obj)
+let columnas = Object.keys(obj)
 
-let cuentaCol=columnas.find(c=>normalizar(c).includes("cuenta"))
-let suscripcionCol=columnas.find(c=>normalizar(c).includes("suscrip"))
-let cpCol=columnas.find(c=>normalizar(c).includes("postal")||normalizar(c)=="cp")
+let cuentaCol = columnas.find(c => normalizar(c).includes("cuenta"))
+let suscripcionCol = columnas.find(c => normalizar(c).includes("suscrip"))
+let cpCol = columnas.find(c => normalizar(c).includes("postal") || normalizar(c)=="cp")
 
-return{cuentaCol,suscripcionCol,cpCol}
+return {cuentaCol,suscripcionCol,cpCol}
 
 }
 
 document.getElementById("excelFile").addEventListener("change",function(e){
 
-const reader=new FileReader()
+const reader = new FileReader()
 
-reader.onload=function(event){
+reader.onload = function(event){
 
-const data=new Uint8Array(event.target.result)
+const data = new Uint8Array(event.target.result)
 
-const workbook=XLSX.read(data,{type:'array'})
+const workbook = XLSX.read(data,{type:'array'})
 
-const sheet=workbook.Sheets[workbook.SheetNames[0]]
+const sheet = workbook.Sheets[workbook.SheetNames[0]]
 
-const json=XLSX.utils.sheet_to_json(sheet)
+const json = XLSX.utils.sheet_to_json(sheet)
 
-const {cuentaCol,suscripcionCol,cpCol}=detectarColumnas(json[0])
+const {cuentaCol,suscripcionCol,cpCol} = detectarColumnas(json[0])
 
-datos=json.map(row=>({
+datos = json.map(row => ({
 
-cuenta:normalizar(row[cuentaCol]),
-suscripcion:clasificarSuscripcion(row[suscripcionCol]),
-cp:cpCol?parseInt(row[cpCol]):null
+cuenta: normalizar(row[cuentaCol]),
+suscripcion: clasificarSuscripcion(row[suscripcionCol]),
+cp: cpCol ? parseInt(row[cpCol]) : null
 
 })).filter(d=>d.suscripcion)
 
-alert("Archivo cargado")
+alert("Archivo cargado correctamente")
 
 }
 
@@ -203,15 +211,15 @@ reader.readAsArrayBuffer(e.target.files[0])
 
 function obtenerRevistasFiltro(){
 
-let select=document.getElementById("revistasFiltro")
+let select = document.getElementById("revistasFiltro")
 
-let arr=[]
+let seleccionadas=[]
 
 for(let o of select.selectedOptions){
-arr.push(o.value)
+seleccionadas.push(o.value)
 }
 
-return arr
+return seleccionadas
 
 }
 
@@ -219,77 +227,22 @@ function obtenerRangos(){
 
 return [
 
-{d:parseInt(r1d.value),h:parseInt(r1h.value),nombre:"Rango 1"},
-{d:parseInt(r2d.value),h:parseInt(r2h.value),nombre:"Rango 2"},
-{d:parseInt(r3d.value),h:parseInt(r3h.value),nombre:"Rango 3"},
-{d:parseInt(r4d.value),h:parseInt(r4h.value),nombre:"Rango 4"}
+{desde:parseInt(r1d.value),hasta:parseInt(r1h.value)},
+{desde:parseInt(r2d.value),hasta:parseInt(r2h.value)},
+{desde:parseInt(r3d.value),hasta:parseInt(r3h.value)},
+{desde:parseInt(r4d.value),hasta:parseInt(r4h.value)}
 
-].filter(r=>!isNaN(r.d)&&!isNaN(r.h))
-
-}
-
-function calcularEnvio(mapa){
-
-let totalEnvio=0
-let pesoTotal=0
-
-for(let cuenta in mapa){
-
-let revistas=[...new Set(mapa[cuenta])]
-
-let pesoCuenta=0
-
-revistas.forEach(r=>{
-
-let input=document.querySelector(`[data-revista="${r}"]`)
-
-pesoCuenta+=parseFloat(input.value)
-
-})
-
-pesoTotal+=pesoCuenta
-
-let costo=0
-
-if(pesoCuenta<=1)costo=costo1.value
-else if(pesoCuenta<=2)costo=costo2.value
-else if(pesoCuenta<=5)costo=costo5.value
-else costo=costo10.value
-
-totalEnvio+=parseFloat(costo)
+].filter(r=>!isNaN(r.desde)&&!isNaN(r.hasta))
 
 }
 
-return{pesoTotal,totalEnvio}
-
-}
-
-function procesar(){
-
-let revistasFiltro=obtenerRevistasFiltro()
-
-let filtrados=datos.filter(d=>{
-
-if(revistasFiltro.length&&!revistasFiltro.includes(d.suscripcion))
-return false
-
-return true
-
-})
-
-let rangos=obtenerRangos()
-
-let usados=new Set()
-
-let html=""
-
-function analizar(lista,titulo){
+function calcular(lista){
 
 let mapa={}
 
 lista.forEach(d=>{
 
-if(!mapa[d.cuenta])mapa[d.cuenta]=[]
+if(!mapa[d.cuenta]) mapa[d.cuenta]=[]
 
 mapa[d.cuenta].push(d.suscripcion)
 
@@ -305,43 +258,107 @@ revistas.sort()
 
 let clave=revistas.join(" + ")
 
-if(!combinaciones[clave])combinaciones[clave]=0
+if(!combinaciones[clave]) combinaciones[clave]=0
 
 combinaciones[clave]++
 
 }
 
-let env=calcularEnvio(mapa)
+let pesoTotal=0
+let totalEnvio=0
 
-html+="<div class='result'>"
-html+="<h3>"+titulo+"</h3>"
+for(let cuenta in mapa){
 
-for(let c in combinaciones){
+let revistas=[...new Set(mapa[cuenta])]
 
-html+=c.toUpperCase()+" : <b>"+combinaciones[c]+"</b><br>"
+let peso=0
 
-}
+revistas.forEach(r=>{
 
-html+="<br>Peso total: <b>"+env.pesoTotal.toFixed(2)+" kg</b>"
-html+="<br>Costo envío: <b>$"+env.totalEnvio.toLocaleString()+"</b>"
+let input=document.querySelector(`[data-revista="${r}"]`)
 
-html+="</div>"
-
-}
-
-rangos.forEach(r=>{
-
-let lista=filtrados.filter(d=>d.cp>=r.d&&d.cp<=r.h)
-
-lista.forEach(d=>usados.add(d))
-
-analizar(lista,r.nombre+" ("+r.d+"-"+r.h+")")
+peso+=parseFloat(input.value)
 
 })
 
-let resto=filtrados.filter(d=>!usados.has(d))
+pesoTotal+=peso
 
-analizar(resto,"RESTO CP")
+let costo=0
+
+if(peso<=1) costo=costo1.value
+else if(peso<=2) costo=costo2.value
+else if(peso<=5) costo=costo5.value
+else costo=costo10.value
+
+totalEnvio+=parseFloat(costo)
+
+}
+
+return {combinaciones,pesoTotal,totalEnvio}
+
+}
+
+function mostrarResultado(titulo,res){
+
+let html="<div class='result'>"
+
+html+="<h3>"+titulo+"</h3>"
+
+for(let c in res.combinaciones){
+
+let nombre=c
+
+if(c.split(" + ").length==1) nombre=c+" solo"
+
+html+=nombre.toUpperCase()+" : <b>"+res.combinaciones[c]+"</b><br>"
+
+}
+
+html+="<br>Peso total: <b>"+res.pesoTotal.toFixed(2)+" kg</b>"
+html+="<br>Costo total envío: <b>$"+res.totalEnvio.toLocaleString()+"</b>"
+
+html+="</div>"
+
+return html
+
+}
+
+function procesar(){
+
+let revistasFiltro=obtenerRevistasFiltro()
+
+let base=datos.filter(d=>{
+
+if(revistasFiltro.length && !revistasFiltro.includes(d.suscripcion))
+return false
+
+return true
+
+})
+
+let rangos=obtenerRangos()
+
+let usados=[]
+
+let html=""
+
+rangos.forEach(r=>{
+
+let lista=base.filter(d=>d.cp>=r.desde && d.cp<=r.hasta)
+
+usados=usados.concat(lista)
+
+let res=calcular(lista)
+
+html+=mostrarResultado("Rango desde "+r.desde+" hasta "+r.hasta,res)
+
+})
+
+let resto=base.filter(d=>!usados.includes(d))
+
+let resResto=calcular(resto)
+
+html+=mostrarResultado("RESTO",resResto)
 
 document.getElementById("resultados").innerHTML=html
 

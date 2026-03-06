@@ -144,6 +144,23 @@ Hasta 10kg <input type="number" id="r4c10" value="20000">
 
 </div>
 
+<!-- NUEVO BLOQUE RANGO 5 RESTO -->
+
+<div class="rango">
+
+<b>Rango 5 (RESTO)</b><br>
+
+<!-- No tiene rango desde-hasta porque es el resto -->
+
+<b>Costos envío Rango 5 (RESTO)</b><br>
+
+Hasta 1kg <input type="number" id="r5c1" value="5090">
+Hasta 2kg <input type="number" id="r5c2" value="7000">
+Hasta 5kg <input type="number" id="r5c5" value="12000">
+Hasta 10kg <input type="number" id="r5c10" value="20000">
+
+</div>
+
 </div>
 
 
@@ -358,11 +375,13 @@ html+=resultado("Rango desde "+r.d+" hasta "+r.h,res)
 
 })
 
+// Rango 5 (RESTO)
+
 let resto=datos.filter(x=>!usados.has(x))
 
-let costosDefault={c1:5090,c2:7000,c5:12000,c10:20000}
+let costosResto={c1:+r5c1.value,c2:+r5c2.value,c5:+r5c5.value,c10:+r5c10.value}
 
-let resResto=calcular(resto,costosDefault)
+let resResto=calcular(resto,costosResto)
 
 html+=resultado("RESTO",resResto)
 
